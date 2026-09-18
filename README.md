@@ -1,10 +1,10 @@
-# 🏠 jnclydehl.local — Cybersecurity Career Homelab
+# 🏠 ad.jnclydehl.local — Cybersecurity Career Homelab
 
-**A self-built enterprise network, run through a deliberate career-transition curriculum: understand the system → attack it → detect the attack → fix it.**
+**A self-built enterprise network, run through a deliberate career-transition curriculum: understand the system, attack it, detect the attack, fix it.**
 
 ![Status](https://img.shields.io/badge/status-active--build-brightgreen)
 ![Phase](https://img.shields.io/badge/phase-A%2FB%2FC%20in%20progress-blue)
-![Domain](https://img.shields.io/badge/domain-jnclydehl.local-informational)
+![Domain](https://img.shields.io/badge/domain-ad.jnclydehl.local-informational)
 ![Hypervisor](https://img.shields.io/badge/hypervisor-Proxmox%20VE-orange)
 ![Firewall](https://img.shields.io/badge/firewall-pfSense-00a99d)
 
@@ -12,15 +12,15 @@
 
 ## 👋 About this lab
 
-I'm Clyde — an IT Support Tech (N1/N2) at Econocom, deployed on-site at Mango's Barcelona offices. The day job gives me real enterprise ticket/AD/M365/hardware exposure. This repo is where I build the parts the job doesn't give me: a network I own end to end, that I can **build, break, monitor, and rebuild** on purpose.
+I'm Clyde, an IT Support Tech (N1/N2) at Econocom, deployed on-site at Mango's Barcelona offices. The day job gives me real enterprise ticket, AD, M365, and hardware exposure. This repo is where I build the parts the job doesn't give me: a network I own end to end, that I can **build, break, monitor, and rebuild** on purpose.
 
-The goal is a red team / SOC-analyst career transition. But this lab is deliberately **not** Kali-and-CTFs-first. The sequencing is intentional:
+The goal is a red team / SOC-analyst career transition. But this lab is deliberately not Kali-and-CTFs-first. The sequencing is intentional:
 
 ```
 IT fundamentals → Sysadmin → Windows/AD → Microsoft Cloud → Networking/Security → Offensive Security
 ```
 
-You can't attack — or defend — a system you don't understand. So infrastructure fundamentals come first, and offensive tooling stays out of scope until the foundation underneath it is solid.
+You can't attack, or defend, a system you don't understand. So infrastructure fundamentals come first, and offensive tooling stays out of scope until the foundation underneath it is solid.
 
 ## 🗺️ Current architecture
 
@@ -45,10 +45,10 @@ You can't attack — or defend — a system you don't understand. So infrastruct
                     │ WIN11-01 .20.22 │  domain-joined client
                     └─────────────────┘
 
-        Remote management → Tailscale (Proxmox host, A8)
+        Remote management: Tailscale (Proxmox host, A8)
 ```
 
-> Second Proxmox node (i5 gaming PC) is coming online as an on-demand box for offensive-security VMs — kept deliberately separate from the always-on A8, since infra-critical services (pfSense, DC01) never live on hardware that isn't always up.
+> Second Proxmox node (i5 gaming PC) is coming online as an on-demand box for offensive-security VMs, kept deliberately separate from the always-on A8, since infra-critical services (pfSense, DC01) never live on hardware that isn't always up.
 
 ## 🧰 Stack
 
@@ -56,7 +56,7 @@ You can't attack — or defend — a system you don't understand. So infrastruct
 |---|---|
 | Hypervisor | Proxmox VE |
 | Firewall / Routing | pfSense |
-| Identity | Windows Server — Active Directory Domain Services, DNS, GPOs |
+| Identity | Windows Server: Active Directory Domain Services, DNS, GPOs |
 | Remote access | Tailscale |
 | Automation (in progress) | PowerShell |
 | Planned | Entra ID, Intune, M365, Sysmon, centralized logging / SIEM |
@@ -65,20 +65,20 @@ You can't attack — or defend — a system you don't understand. So infrastruct
 
 | Phase | Focus | Status |
 |---|---|---|
-| A | pfSense — firewall rules, NAT, logging, allow/deny | 🟡 In progress |
-| B | VLAN segmentation — Management / Servers / Clients / Security, inter-VLAN control | 🟡 Started (VLANs exist, mostly empty) |
-| C | Enterprise AD — OUs, groups, service accounts, GPOs, delegation | 🟡 In progress |
-| D | PowerShell / automation — scripted, rebuildable environments | ⬜ Pending |
-| E | Microsoft Cloud — Entra ID, hybrid identity, M365, Intune, Autopilot, Conditional Access | ⬜ Pending |
-| F | Security monitoring — Sysmon, event logging, SIEM (Wazuh), detection rules | ⬜ Pending |
-| G | Offensive security lab — attacker node, recon, AD attacks, privesc, lateral movement | ⬜ Pending |
+| A | pfSense: firewall rules, NAT, logging, allow/deny | 🟡 In progress |
+| B | VLAN segmentation: Management / Servers / Clients / Security, inter-VLAN control | 🟡 Started (VLANs exist, mostly empty) |
+| C | Enterprise AD: OUs, groups, service accounts, GPOs, delegation | 🟡 In progress |
+| D | PowerShell / automation: scripted, rebuildable environments | ⬜ Pending |
+| E | Microsoft Cloud: Entra ID, hybrid identity, M365, Intune, Autopilot, Conditional Access | ⬜ Pending |
+| F | Security monitoring: Sysmon, event logging, SIEM (Wazuh), detection rules | ⬜ Pending |
+| G | Offensive security lab: attacker node, recon, AD attacks, privesc, lateral movement | ⬜ Pending |
 | H | Red team scenario + professional pentest report | ⬜ Pending |
 
 **Cert path:** SC-900 → AZ-900 → SC-300 → AZ-104 → MD-102 → SC-200
 
 ## 📚 Documentation
 
-Docs are split by service — a **Design** doc (architecture/why), a **build/implementation** doc (what was actually done), and an **Administration** doc (ongoing ops, dated change log) per component.
+Docs are split by service: a **Design** doc (architecture and rationale), a **build/implementation** doc (what was actually done), and an **Administration** doc (ongoing ops, dated change log) per component.
 
 | Area | Docs |
 |---|---|
@@ -90,10 +90,10 @@ Docs are split by service — a **Design** doc (architecture/why), a **build/imp
 
 ## 🚫 Deliberate non-goals (for now)
 
-- No `allow any` firewall rules — the point of Phase A is understanding *why* a rule works, not making pings succeed.
+- No `allow any` firewall rules. The point of Phase A is understanding why a rule works, not making pings succeed.
 - No jumping to Kali/exploitation before the infra it would attack actually exists.
 - No infra-critical VM (pfSense, DC01) ever lands on hardware that isn't always-on.
 
 ---
 
-<sub>Built and broken by Clyde · IT Support Tech → SOC/Red Team, in progress.</sub>
+<sub>Built and broken by Clyde. IT Support Tech to SOC/Red Team, in progress.</sub>
