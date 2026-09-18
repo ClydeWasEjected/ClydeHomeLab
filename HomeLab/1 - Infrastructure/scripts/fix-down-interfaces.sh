@@ -20,8 +20,7 @@ for iface in "${WATCHED_IFACES[@]}"; do
     if [[ ",$flags," == *",UP,"* ]]; then
         echo "$(date '+%F %T') $iface up, no action" >> "$LOG"
     else
-        ip link set "$iface" up
-        if [[ $? -eq 0 ]]; then
+        if ip link set "$iface" up; then
             echo "$(date '+%F %T') $iface was admin-down, brought up" >> "$LOG"
         else
             echo "$(date '+%F %T') $iface was admin-down, failed to bring up" >> "$LOG"

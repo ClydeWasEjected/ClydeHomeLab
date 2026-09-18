@@ -55,7 +55,7 @@ Fixed while re-adding it to the repo:
 - `$date` was only set on the success branch, so the failure-path log line referenced an unset/stale value. Moved the timestamp above the inner `if` so both branches log it correctly.
 - `grep "net$netidx"` wasn't anchored, so `net1` would also match `net10` on a host with 10+ NICs. Anchored to `net${netidx}:`.
 
-**Next when redeploying to the host:** `scp scripts/fix-orphan-taps.sh proxmox-a8:/usr/local/bin/fix-orphan-taps.sh` and confirm the timer still points at it. Note: the host's live copy had already been hand-fixed for the `do`/`then` and missing-`fi` bugs independently before this check (see verification below) — only the `net${netidx}:` anchoring is still outstanding on the host.
+Deployed via `deploy.sh` during the CI/CD setup below — host now runs the fully anchored repo version, no drift remaining.
 
 ### 2026-09-18: Live re-verification (SSH), and fix-down-interfaces discovered
 
@@ -75,3 +75,24 @@ Re-ran the end-to-end test over SSH against `proxmox-a8` (`root@100.121.216.124`
 - VM 103 stopped again afterward to restore original state
 
 While checking `systemctl list-timers`, found a second, previously undocumented watchdog already running on the host: **fix-down-interfaces** (see its own section above). It handles a different failure mode (admin-down critical host interfaces, not orphaned VM taps) and was never committed anywhere — pulled and added to the repo this session before it could be lost the same way fix-orphan-taps was.
+
+### 2026-09-18: CI/CD pipeline for watchdog scripts
+
+Scripts were getting lost/drifting because the only place they existed was hand-edited directly on the host. Built a real pipeline so the repo is the source of truth end to end: write → push → CI lint → merge → auto-deploy.
+
+**CI** — `.github/workflows/ci.yml`. Runs on every push/PR touching any `*.sh`: `bash -n` syntax check, then `shellcheck --severity=warning`. Would have caught the `do`/`then` bug automatically, before a human ever had to notice.
+
+**CD** — `.github/workflows/deploy.yml`. On push to `main` touching either watchdog script: GitHub-hosted runner joins the Tailscale tailnet as an ephemeral node (`tailscale/github-action`, scoped by an OAuth client's `tag:ci-deploy`), then runs `scripts/deploy.sh` for each script over SSH.
+
+**Deploy key, least-privilege:** a dedicated ed25519 keypair (`~/.ssh/deploy-keys/homelab-ci-deploy`, generated 2026-09-18, fingerprint `SHA256:OVcs3Lf6ZgdsgKNRV2573qRpfKMiv/xkD/4Y4w8esU4`) — not the personal keys already on the host. Restricted in `authorized_keys`:
+```
+restrict,command="/usr/local/bin/ci-deploy-watchdog.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty <pubkey>
+```
+`restrict` strips port/X11/agent-forwarding and pty allocation; `command=` forces every connection through [[ci-deploy-watchdog.sh]] regardless of what the client asks for. That wrapper only accepts `deploy <script> <unit>` where both are on a hardcoded allowlist (`fix-orphan-taps.sh`/`fix-orphan-taps`, `fix-down-interfaces.sh`/`fix-down-interfaces`), reads the new script body from stdin, refuses to install anything that fails `bash -n`, then restarts only the matching timer. A leaked key can deploy one of two known scripts and nothing else — verified by testing `whoami`/`cat /etc/shadow` (denied) and an off-allowlist script name (denied) through the key before trusting it with CI.
+
+**Local usage:** `scripts/deploy.sh <script> <unit>` — same path CI uses, so a local deploy and a CI deploy behave identically.
+
+**Still manual (needs Clyde's own account access, not doable from a session):**
+- GitHub repo secrets: `DEPLOY_SSH_KEY` (private key content, from `~/.ssh/deploy-keys/homelab-ci-deploy` — never pasted into a Claude Code session or the repo), `TS_OAUTH_CLIENT_ID` + `TS_OAUTH_SECRET` (Tailscale admin console → Settings → OAuth clients, scoped to a tag that can reach nothing but `proxmox-a8:22`)
+- Tailscale ACL: create `tag:ci-deploy` and restrict it to `proxmox-a8` port 22 only, so a compromised CI run can't reach the rest of the tailnet (pfSense, DC01, etc.)
+- Confirm `tailscale/github-action`'s current input names (`oauth-client-id`/`oauth-secret` vs legacy `authkey`) against its README before first run — fast-moving action, don't trust the pinned example blindly

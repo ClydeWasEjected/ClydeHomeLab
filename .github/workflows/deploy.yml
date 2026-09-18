@@ -1,0 +1,37 @@
+name: Deploy watchdog scripts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "HomeLab/1 - Infrastructure/scripts/fix-orphan-taps.sh"
+      - "HomeLab/1 - Infrastructure/scripts/fix-down-interfaces.sh"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Joins the runner to the tailnet for the duration of this job only
+      # (ephemeral node), scoped by the OAuth client's tags in the Tailscale
+      # admin console. See tailscale/github-action README for current inputs
+      # before first use -- confirm oauth-client-id/oauth-secret vs authkey.
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci-deploy
+
+      - name: Write deploy key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/homelab-ci-deploy
+          chmod 600 ~/.ssh/homelab-ci-deploy
+
+      - name: Deploy fix-orphan-taps.sh
+        run: bash "HomeLab/1 - Infrastructure/scripts/deploy.sh" fix-orphan-taps.sh fix-orphan-taps ~/.ssh/homelab-ci-deploy
+
+      - name: Deploy fix-down-interfaces.sh
+        run: bash "HomeLab/1 - Infrastructure/scripts/deploy.sh" fix-down-interfaces.sh fix-down-interfaces ~/.ssh/homelab-ci-deploy
