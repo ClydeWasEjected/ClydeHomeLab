@@ -90,6 +90,8 @@ This bridge will provide pfSense with access to the internal room network.
 
 ## 5. Network Segmentation
 
+> ⚠️ **Superseded.** The VLAN plan below (HOME/LAB-USERS/LAB-SERVERS/ATTACKER/IOT) was the original design and was never built. What's actually deployed uses different numbers, names, and subnets — see [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>) §2, which is authoritative. Kept here only for the original rationale (deny-by-default, isolate attacker traffic from home traffic); don't use this table for real IPs.
+
 The internal network will be divided into separate security zones using VLANs.
 
 |VLAN|Name|Subnet|Purpose|

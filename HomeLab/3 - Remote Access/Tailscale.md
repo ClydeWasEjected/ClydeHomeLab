@@ -1,90 +1,27 @@
-# Objective
-The objective of this setup is to enable secure remote access to the Proxmox hypervisor using Tailscale. This allows the homelab to be managed from outside the local network without exposing any services directly to the internet.
+# Tailscale
 
----
-## Overview
-Tailscale is installed directly on the Proxmox host in order to create a private VPN overlay network. Once connected, the Proxmox interface becomes accessible through a private Tailscale IP, making it possible to manage virtual machines, storage, and system configuration remotely.
+## Current State
 
-This approach keeps the lab secure because no ports need to be forwarded on the router and no services are exposed publicly.
+Installed on the Proxmox host (A8) only — not inside any VM. Gives remote access to the Proxmox web UI and console (and by extension every VM on it) over a private overlay network, with no ports forwarded on the router.
 
----
-# Installation
+| Setting | Value |
+|---|---|
+| Installed on | Proxmox host (A8) only |
+| Tailscale IP | `100.x.x.x` — ⚠️ actual address not recorded here; run `tailscale ip -4` on A8 and fill in |
+| Access URL | `https://<tailscale-ip>:8006` (replaces LAN access at `https://192.168.0.20:8006`) |
+| Auto-start | `tailscaled` enabled via systemd |
 
-Tailscale is installed on Proxmox using the official installation script provided by Tailscale. This script automatically configures the required repositories and installs the service.
+**Why host-only for now:** Proxmox's own console/VM management already reaches every VM, so per-VM Tailscale isn't needed yet. Revisit when a VM needs to be reachable independently of Proxmox (e.g. simulating an internet-facing endpoint, or access when Proxmox itself is down).
 
+### Install / enable (for rebuilds)
 ```bash
 curl -fsSL https://tailscale.com/install.sh | sh
-````
-
----
-
-## Service Activation
-
-After installation, the Tailscale service must be enabled and started so it runs continuously in the background. This ensures the VPN connection persists even after system reboots.
-
-```bash
-systemctl enable tailscaled
-systemctl start tailscaled
-```
-
----
-
-## Authentication
-
-To connect the Proxmox host to the Tailscale network, the following command is executed:
-
-```bash
+systemctl enable --now tailscaled
 tailscale up
 ```
+Authenticate via the login URL printed by `tailscale up`. Verify with `tailscale status` and `tailscale ip -4`.
 
-After running this command, a login URL is generated. This URL is opened in a browser and used to authenticate the device under a Tailscale account. Once authenticated, the Proxmox host becomes part of the private Tailscale network.
+## Change Log
 
----
-
-## Verification
-
-To confirm that the connection is active and functioning correctly, the following commands are used.
-
-The first command checks the overall status of the Tailscale network and shows all connected devices:
-
-```bash
-tailscale status
-```
-
-The second command retrieves the private Tailscale IP assigned to the Proxmox host:
-
-```bash
-tailscale ip -4
-```
-
-The expected output is an IP address in the `100.x.x.x` range, which is the internal address used for secure remote access.
-
----
-
-## Access
-
-Once the setup is complete, Proxmox can be accessed remotely using the assigned Tailscale IP address. The web interface remains unchanged; only the access method is different.
-
-[https://100.x.x.x:8006](https://100.x.x.x:8006/)
-
-This replaces the local network access address:
-
-[https://192.168.0.20:8006](https://192.168.0.20:8006/)
-
----
-
-## Why Tailscale is installed only on Proxmox (for this stage)
-
-At this stage of the homelab, installing Tailscale only on the Proxmox host is sufficient because Proxmox already provides full control over all virtual machines. Through the Proxmox dashboard, it is possible to start, stop, and manage all VMs, as well as access their console directly.
-
-This means there is no immediate requirement to install Tailscale inside each individual VM.
-
----
-
-## When per-device Tailscale becomes useful
-
-Installing Tailscale inside individual virtual machines such as DC01 or Windows 11 clients becomes useful in more advanced scenarios. This allows direct access to each machine independently without going through the Proxmox interface. It is useful for simulating real enterprise environments where each endpoint is independently reachable.
-
-It is also relevant for security testing, segmentation experiments, and situations where Proxmox is unavailable but individual machines still need access.
-
----
+### Undated — initial install
+- Installed and authenticated on A8. Exact date not recorded — add it here if you find it in shell history or the Tailscale admin console's device list.

@@ -34,8 +34,8 @@ DHCP range on every VLAN: `.100–.199`.
 | Proxmox host (A8) | `192.168.0.20` — sits **outside pfSense**, on the ISP router's network    | `192.168.0.10` in `Homelab Overview.md`; `192.168.0.20` in `Proxmox Setup.md` and `pfSense Configuration.md`                                                       | Overview.md predates the pfSense migration and was never updated                          |
 | DC01              | `10.10.20.21`, VLAN 20 (Servers)                                          | `192.168.0.21` in `DC01.md`; `10.10.10.21` in an old (now-stale) pfSense rule; `10.10.20.21` confirmed in `pfSense Configuration.md` and `Active Directory Lab.md` | `DC01.md` was never updated after the VLAN migration                                      |
 | WIN11-01          | `10.10.20.22`, VLAN 20 (Servers), gateway `10.10.20.1`, DNS `10.10.20.21` | `192.168.0.22 (planned)` in `Proxmox Setup.md`                                                                                                                     | Proxmox Setup.md predates the actual WIN11-01 build — `WIN11-01.md` has the current value |
-| Main PC           | `10.10.10.8` (legacy LAN)                                                 |                                                                                                                                                                    | Pending migration to Management VLAN (10)                                                 |
-| Domain name       | Needs one confirmed form                                                  | `jnclydehl.local` (Overview/Design docs), `ad.jnclydehl.local` (WIN11-01 domain join), `jn.clydehl.local` (typo in `DC01.md`)                                      | Never standardized after DC01 promotion                                                   |
+| Main PC           | `10.10.10.23` (legacy LAN)                                                |                                                                                                                                                                    | Pending migration to Management VLAN (10)                                                 |
+| Domain name       | `ad.jnclydehl.local` — confirmed via live DNS query (2026-09-16 incident), docs updated 2026-09-18 | Historical: `jnclydehl.local` (old Overview/Design text), `jn.clydehl.local` (typo in `DC01.md` build log) | Resolved — see [[Active Directory Design]] and [[DC01]]                                   |
 | NetBIOS           | `JNCLYDEHL`                                                               | consistent everywhere it appears                                                                                                                                   |                                                                                           |
 
 ## 4. Services running
@@ -46,13 +46,17 @@ DHCP range on every VLAN: `.100–.199`.
 |Active Directory Domain Services + DNS|DC01 (VM on A8)|Domain authentication, name resolution for the domain|
 |Tailscale|Installed on the A8 Proxmox host only|Secure remote management of Proxmox (and by extension all VMs/consoles) without exposing ports to the internet|
 
-## 5. Known documentation debt (from this review)
+## 5. Known documentation debt (last reviewed 2026-09-18)
 
-- [ ] Reconcile domain name to one canonical value everywhere (`DC01.md` has a typo: `jn.clydehl.local`)
-- [x] Update `DC01.md` network section — still shows the pre-VLAN IP (`192.168.0.21`)
+- [x] **Domain name reconciled: `ad.jnclydehl.local` is canonical**, confirmed via a direct DNS query against DC01 during the 2026-09-16 incident (SOA record returned). `DC01.md`'s build-log typo (`jn.clydehl.local`) was a transcription error, not the real forest name — corrected in `DC01.md` and `Active Directory Design.md` (2026-09-18).
+- [ ] **NetBIOS name likely wrong in docs** — design docs say `JNCLYDEHL`, but `whoami` output in `WIN11-01.md` shows `AD\Administrator`, which is what Windows auto-derives from `ad.jnclydehl.local`. Confirm with `Get-ADDomain | Select Name,NetBIOSName,DNSRoot` on DC01 and fix whichever docs are wrong.
+- [x] Update `DC01.md` network section — no longer shows the pre-VLAN IP; rewritten as Current State + Change Log (2026-09-18)
 - [ ] Remove/disable the stale pfSense rule pointing at `10.10.10.21` for DC01
-- [x] Update or mark superseded: `Network Design.md` and `pfSense Design.md` (VLAN numbering doesn't match what's actually deployed)
+- [x] `pfSense Design.md` — was marked done previously but the stale VLAN table was still there with no flag. Actually fixed now (2026-09-18): added a "superseded" banner pointing here.
 - [x] Fill in the incomplete section in `WIN11-01.md` (placeholder line never completed)
-- [ ] Empty index files with no content: `HomeLab.md`, `1 - Infrastructure.md`, `2 - Microsoft.md`, `3 - Remote Access.md`, `4 - pfSense.md` — either populate as folder landing pages or remove
-- [ ] `HomeLab/Plan.md`, `Roles.md`, `Roles 2.md` are early brainstorming notes (mention hardware since discarded, e.g. Ryzen 3, and tools never adopted, e.g. Fortinet/Netgear firewalls) — archive them or mark clearly as superseded so they don't get read as current
-- [ ] **Security note:** `Homelab Overview.md` and `DC01.md` contain plaintext passwords (and a personal Gmail). Worth moving these out of notes that might get shared/exported and into a password manager, even for a lab environment
+- [x] Empty index files with no content (`HomeLab.md`, `1 - Infrastructure.md`, etc.) — removed. Note: this left dangling `[[1 - Infrastructure]]`-style wikilinks in `Homelab - Project Overview.md` pointing at now-deleted files; fixed 2026-09-18.
+- [ ] `HomeLab/Plan.md`, `Roles.md`, `Roles 2.md` — deleted from the vault already (confirmed gone in git status); no longer an open item.
+- [x] **Security note:** re-checked 2026-09-18 — no plaintext passwords or personal email found in current `DC01.md` or any tracked doc. The old file that had them (`Homelab Overview.md`) no longer exists. Closing this, but keep the habit of not typing real credentials into notes going forward.
+- [ ] **New — DC01's own preferred DNS is set to the gateway (`10.10.20.1`), not to itself.** Contradicts the DNS rule stated in `Active Directory Design.md` ("DC01 does not use the VLAN gateway as DNS"). This is a real AD anti-pattern, not just a doc issue — verify and fix on the live box. See `DC01.md` Current State.
+- [ ] **New — WAN GUI access on pfSense was temporarily opened during initial setup** (`pfSsh.php playback enableallowallwan`) and no later doc confirms it was closed again. `pfSense Configuration.md` has no WAN rule table at all. Check `System > Advanced` and `Firewall > Rules > WAN` on the live box. See `pfSense Network Configuration.md`.
+- [ ] **New — broken embed:** `AD Administration.md` references a screenshot (`aduc-ou-tree-2026-09-16.png`) that was never actually saved to attachments.

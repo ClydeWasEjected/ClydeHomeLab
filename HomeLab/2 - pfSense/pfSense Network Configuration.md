@@ -1,56 +1,27 @@
-After the installation we will proceed by configuring pfSense to follow our network plan.
+# pfSense Network Configuration
 
-# Interfaces
-Before starting to add a DHCP server we will have to check on your interfaces first.
+Related: [[pfSense Installation]] · [[pfSense Configuration]]
 
-![](attachments/Pasted%20image%2020260908163717.png)
+Initial interface/DHCP/DNS bring-up, done before the VLAN build. Current rules and VLANs live in [[pfSense Configuration]] — this doc is history only.
 
-In our LAN interface we must enable it and add our subnet which is `10.10.10.1/24`
-![](attachments/Pasted%20image%2020260908163810.png)
+## What was done
+- Enabled the LAN interface, assigned `10.10.10.1/24` (this is the network now called "Legacy LAN" in [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>)).
+- Configured the DHCP server on LAN.
+- Confirmed the network path: ISP router → pfSense → AP → home network; verified a client got a correct lease through the AP.
 
-# WAN GUI (Temporary)
-
-Since I can't connect physically my laptop to the server I will temporarily open the GUI to the WAN network to be able to access it.
-
-To do so we access to the `SHELL` by selecting the option 8 and using these commands:
-
+## ⚠️ Open security item — WAN GUI temporarily opened, closure not verified
+While the laptop couldn't be physically connected to the LAN side yet, the web GUI was temporarily exposed on WAN via console shell:
 ```
 pfSsh.php playback enableallowallwan
 ```
+**No later note in any doc confirms this was reverted**, and [[pfSense Configuration]]'s current firewall rules only document LAN and per-VLAN rules — there's no WAN rule table at all. Check the live box (System > Advanced > Admin Access, and Firewall > Rules > WAN) to confirm the webConfigurator is not still reachable from WAN before trusting this is closed.
 
-![](attachments/Pasted%20image%2020260908231459.png)
+## Troubleshooting: DNS resolution
+- Initial testing (ping `8.8.8.8` + DNS lookups) failed.
+- Adding the LAN subnet to the DNS Resolver's access list did not fix it.
+- Fixed by enabling **Forward Mode** on the DNS Resolver.
 
-![](attachments/Pasted%20image%2020260908232139.png)
-# DHCP Server
-
-After configuring our interfaces we will start with our DHCP server to assign IP addresses to our clients.
-
-![](attachments/Pasted%20image%2020260909010439.png)
-
-# Testing Network
-
-After setting up the DHCP, I started to test if I can ping google and the DNS.
-
-At first I had some issues with the DNS and I have tried multiple troubleshooting and configurations.
-
-![](attachments/Pasted%20image%2020260909010925.png)
-
-I added the Subnet to the Access list to see if that fixed it and it didn't.
-
-![](attachments/Pasted%20image%2020260909011721.png)
-
-By enabling Forward Mode it has worked and now DNS works correctly.
-
-![](attachments/Pasted%20image%2020260909012859.png)![](attachments/Pasted%20image%2020260909012917.png)
-
-# Setting Up Network Architecture
-
-The plan is to use the ISP router to feed network to the server and use my personal router as an AP.
-
-To do so we must configure the cabling by the following order:
-
-ISP Router --> pfSense --> AP --> Home network
-
-Now by connecting my laptop to my AP I see that it receives the correct IP address and I can connect to the network correctly.
-
-![](attachments/Pasted%20image%2020260909031957.png)
+## Verification
+![Fix applied — Forward Mode enabled on the DNS Resolver](attachments/Pasted%20image%2020260909012859.png)
+![Confirmed working — DNS resolution succeeding after the fix](attachments/Pasted%20image%2020260909012917.png)
+![Final network path confirmed — client got a correct IP through the AP and reached the internet](attachments/Pasted%20image%2020260909031957.png)

@@ -1,5 +1,5 @@
 
-> This is the master document. Read this first before touching any other folder. Related: [[1 - Infrastructure]] · [[4 - Microsoft]] · [[3 - Remote Access]] · [[2 - pfSense]] · [Homelab - Inventory](Homelab%20-%20Inventory.md)
+> This is the master document. Read this first before touching any other folder. Related: [Homelab - Inventory](Homelab%20-%20Inventory.md)
 
 ## 1. Objective
 
@@ -27,7 +27,7 @@ Each phase below produces something that later phases attack, monitor, or automa
 | ----- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | A     | pfSense - firewall rules, NAT, logging, allow/deny                                                     | 🟡 In progress                                                                                                             |
 | B     | VLAN segmentation - Management / Servers / Clients / Security zones, inter-VLAN control                | 🟡 Started (VLANs exist in pfSense; only Servers has real devices,  see [Homelab - Inventory](Homelab%20-%20Inventory.md)) |
-| C     | Enterprise AD - departmental OUs, groups, service accounts, GPOs, delegation                           | 🟡 In progress (C1 done, see [[../4 - Microsoft/AD Administration]])                                                       |
+| C     | Enterprise AD - departmental OUs, groups, service accounts, GPOs, delegation                           | 🟡 In progress (C1 started, see [[AD Administration]])                                                    |
 | D     | PowerShell / automation - scripted user/OU/group/VM creation, rebuildable environments                 | ⬜ Pending                                                                                                                  |
 | E     | Microsoft cloud - Entra ID, hybrid identity, M365, Intune, Autopilot, Conditional Access               | ⬜ Pending                                                                                                                  |
 | F     | Security monitoring - Sysmon, Windows event logging, SIEM (Wazuh), detection rules                     | ⬜ Pending                                                                                                                  |
@@ -56,6 +56,6 @@ See [Homelab - Inventory](Homelab%20-%20Inventory.md)  for exact specs/IPs/statu
 ## 6. Known open items
 
 - Several docs still reference the pre-VLAN legacy IP scheme (`10.10.10.x` / `192.168.0.x`) and need a pass to confirm/update against current state tracked in [Homelab - Inventory](Homelab%20-%20Inventory.md).
-- Domain name has been written three different ways across docs (`jnclydehl.local`, `ad.jnclydehl.local`, and a typo `jn.clydehl.local`) needs one confirmed canonical form.
+- ~~Domain name written inconsistently across docs~~ — resolved 2026-09-18, canonical form is `ad.jnclydehl.local` (see [Homelab - Inventory](Homelab%20-%20Inventory.md) §3). NetBIOS name still needs a live confirm.
 - Proxmox management UI (`192.168.0.20`) still sits outside pfSense, on the ISP router's network not yet migrated behind the firewall.
 - No inter-VLAN firewall rules exist yet (default-deny between segments, which is correct for now, but Phase B isn't complete until deliberate inter-VLAN rules are added).

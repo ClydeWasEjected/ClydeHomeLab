@@ -131,3 +131,16 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 - AP connects to the legacy flat LAN, untagged — MGMT/CLIENTS/SECURITY 
   VLANs are configured but empty
 - Blocked on: managed switch or AP with 802.1Q support
+
+### **2026-09-16 — LAN gateway auto-selected as default, breaking WAN routing**
+
+- **Symptom:** LAN clients got valid DHCP leases and could reach the pfSense GUI, but had no internet access. WAN gateway (WAN_DHCP) showed "pending" in Status > Gateways.
+- **Root cause:** No IPv4 default gateway was explicitly pinned in System > Routing > Gateways. pfSense's automatic gateway-selection logic defaulted to LAN's gateway (LANGW) instead of WAN on every boot/reload, confirmed recurring across multiple reboots in system logs predating this session.
+- **Contributing/secondary issue:** During interface reassignment via console (20:13), dhcpd briefly failed to bind to LAN ("no subnet declaration for vtnet1") — transient, self-resolved by the next filter reload once the interface's IP was consistently applied.
+- **Fix:** System > Routing > Gateways > edit WAN_DHCP > check "Default Gateway" (IPv4) > save.
+- **Verification:** Status > Gateways shows WAN_DHCP online (default); phone regained internet access.
+- **Follow-up:** NTP fails to sync (config syntax error in ntpd startup, every boot) — clock reliability affects log timestamp accuracy; needs separate fix.
+
+### **2026-09-16 — Aftermath of the issue**
+- **DHCP Static Mapping**: Static mapping had an issue since it detected that the main laptop´s IP is already taken by a different device, so we had to change it from 10.10.10.8 to 10.10.10.23.
+- **Firewall Proxmox Rule:** Since we have changed the IP address of the main laptop we had to modify the firewall rule source.

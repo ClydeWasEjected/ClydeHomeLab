@@ -1,4 +1,3 @@
-
 # Active Directory Administration
 
 Related: [[Active Directory Design]] · [[DC01]] · [[WIN11-01]]
@@ -28,9 +27,8 @@ ad.jnclydehl.local
 
 ```
 
-> [!tip] Screenshot
-> ![[aduc-ou-tree-2026-09-16.png]]
-> Final OU tree state after C1, confirming Departments/Service Accounts structure.
+> [!todo] Screenshot pending
+> Referenced screenshot `aduc-ou-tree-2026-09-16.png` was never actually saved to the attachments folder — add it or drop this callout.
 
 ### Security Groups
 | Group | Type/Scope | Purpose | Members |
@@ -39,7 +37,7 @@ ad.jnclydehl.local
 | SG_IT_Users | Security, Global | Standard IT department users | *pendiente* |
 | SG_Security_Analysts | Security, Global | Access to logs/monitoring (future SIEM) | *pendiente* |
 | SG_Operations_Users | Security, Global | Standard "regular user" baseline | *pendiente* |
-| SG_Workstation_Joiners | Security, Global | Delegated join-domain permission (used in [[Active Directory Administration#C3|C3]]) | *pendiente* |
+| SG_Workstation_Joiners | Security, Global | Delegated join-domain permission (planned for C3 — delegation, not yet done) | *pendiente* |
 
 ### Naming Conventions
 - OUs: `<Department> → Users / Computers / Groups`

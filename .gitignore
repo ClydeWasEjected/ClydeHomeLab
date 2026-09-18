@@ -2,3 +2,7 @@ CLAUDE.md
 .trash/
 *.base
 Untitled.base
+.obsidian/
+.makemd/
+.space/
+**/.space/
