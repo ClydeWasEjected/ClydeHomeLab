@@ -1,7 +1,7 @@
 **Host:** A8 (proxmox-a8), see [[Proxmox Setup]]
 
 **Watchdog: fix-orphan-taps**
-- Script (tracked in repo): [[fix-orphan-taps.sh]] (`HomeLab/1 - Infrastructure/scripts/fix-orphan-taps.sh`)
+- Script (tracked in repo): [[fix-orphan-taps.sh]] (`HomeLab/5 - Automation/scripts/fix-orphan-taps.sh`)
 - Deployed at: `/usr/local/bin/fix-orphan-taps.sh`
 - Systemd units: `/etc/systemd/system/fix-orphan-taps.service`, `/etc/systemd/system/fix-orphan-taps.timer`
 - Timer: `OnBootSec=10`, `OnUnitActiveSec=60`
@@ -10,7 +10,7 @@
 - Status: active, `enabled` (survives reboot), verified live end to end 2026-09-18 (see Change Log)
 
 **Watchdog: fix-down-interfaces**
-- Script (tracked in repo): [[fix-down-interfaces.sh]] (`HomeLab/1 - Infrastructure/scripts/fix-down-interfaces.sh`)
+- Script (tracked in repo): [[fix-down-interfaces.sh]] (`HomeLab/5 - Automation/scripts/fix-down-interfaces.sh`)
 - Deployed at: `/usr/local/bin/fix-down-interfaces.sh`
 - Systemd units: `/etc/systemd/system/fix-down-interfaces.service`, `/etc/systemd/system/fix-down-interfaces.timer`
 - Timer: `OnBootSec=10`, `OnUnitActiveSec=60`, `Persistent=true`
@@ -96,3 +96,6 @@ restrict,command="/usr/local/bin/ci-deploy-watchdog.sh",no-port-forwarding,no-X1
 - GitHub repo secrets: `DEPLOY_SSH_KEY` (private key content, from `~/.ssh/deploy-keys/homelab-ci-deploy` — never pasted into a Claude Code session or the repo), `TS_OAUTH_CLIENT_ID` + `TS_OAUTH_SECRET` (Tailscale admin console → Settings → OAuth clients, scoped to a tag that can reach nothing but `proxmox-a8:22`)
 - Tailscale ACL: create `tag:ci-deploy` and restrict it to `proxmox-a8` port 22 only, so a compromised CI run can't reach the rest of the tailnet (pfSense, DC01, etc.)
 - Confirm `tailscale/github-action`'s current input names (`oauth-client-id`/`oauth-secret` vs legacy `authkey`) against its README before first run — fast-moving action, don't trust the pinned example blindly
+### 2026-09-19: Scripts moved to 5 - Automation
+
+Automation now has its own folder, `HomeLab/5 - Automation/scripts/`, instead of living under Infrastructure. Reason: the scripts and the pipeline are their own domain and will grow beyond Proxmox (AD provisioning, PowerShell). Moved with `git mv` so history follows. Updated the path filters and commands in `.github/workflows/deploy.yml` and the script paths in this doc. `.github/workflows/` stays at the repo root because GitHub only reads workflows from there. Local `bash -n` passes on all four scripts; CI/deploy not yet run against the new paths.
