@@ -58,7 +58,7 @@ You can't attack, or defend, a system you don't understand. So infrastructure fu
 | Firewall / Routing | pfSense |
 | Identity | Windows Server: Active Directory Domain Services, DNS, GPOs |
 | Remote access | Tailscale |
-| Automation (in progress) | PowerShell |
+| Automation | Bash watchdogs deployed by a GitHub Actions CI/CD pipeline (ShellCheck, Tailscale, restricted SSH key). PowerShell in progress. |
 | Planned | Entra ID, Intune, M365, Sysmon, centralized logging / SIEM |
 
 ## 🧭 Roadmap
@@ -86,6 +86,7 @@ Docs are split by service: a **Design** doc (architecture and rationale), a **bu
 | 🔥 pfSense | [Design](<HomeLab/2 - pfSense/pfSense Design.md>) · [Installation](<HomeLab/2 - pfSense/pfSense Installation.md>) · [Network Configuration](<HomeLab/2 - pfSense/pfSense Network Configuration.md>) · [Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>) |
 | 🌐 Remote Access | [Tailscale](<HomeLab/3 - Remote Access/Tailscale.md>) |
 | 🪟 Microsoft / AD | [Active Directory Design](<HomeLab/4 - Microsoft/Active Directory Design.md>) · [AD Administration](<HomeLab/4 - Microsoft/AD Administration.md>) · [DC01](<HomeLab/4 - Microsoft/DC01.md>) · [WIN11-01](<HomeLab/4 - Microsoft/WIN11-01.md>) |
+| ⚙️ Automation | [Design](<HomeLab/5 - Automation/Automation Design.md>) · [Administration](<HomeLab/5 - Automation/Automation Administration.md>) |
 | 📋 Ops | [Incidents Log](<HomeLab/Incidents Log.md>) |
 
 ## 🚫 Deliberate non-goals (for now)
