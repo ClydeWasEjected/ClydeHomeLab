@@ -18,7 +18,7 @@ jobs:
       # admin console. See tailscale/github-action README for current inputs
       # before first use -- confirm oauth-client-id/oauth-secret vs authkey.
       - name: Connect to Tailscale
-        uses: tailscale/github-action@v3
+        uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
