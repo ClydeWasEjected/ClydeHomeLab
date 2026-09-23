@@ -44,10 +44,11 @@ Departments chosen for the OU tree (IT / Security / Operations, see [[AD Adminis
 
 ## Proxmox Virtualization Setup
 
+**As of 2026-09-23, both VMs live on `proxmox-lab`, not the A8** — see [[Proxmox Lab Setup]] for the migration and current host details, and [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>) for current IPs (temporarily off VLAN 20, see there). Powered-off rollback copies of both remain on the A8. The specs below are what's actually running; don't treat this section as authoritative for network placement.
+
 ### Host Configuration
-- Hypervisor: Proxmox VE
-- Bridge: `vmbr0` (bridged network)
-- Storage: local-lvm
+- Hypervisor: Proxmox VE, host `proxmox-lab` (was A8 before 2026-09-23)
+- Storage: `local` (both hosts have `local-lvm` removed and reclaimed into `local` — see [[Proxmox Setup]] and [[Proxmox Lab Setup]])
 - ISO storage: local
 
 ### VM Specifications
@@ -55,15 +56,15 @@ Departments chosen for the OU tree (IT / Security / Operations, see [[AD Adminis
 **DC01**
 - Windows Server 2022
 - 2 CPU
-- 4GB RAM
-- 50GB Disk
-- Network: vmbr0
+- 6GB RAM (bumped from 4GB 2026-09-23 for AD DS/DNS headroom — verify actually applied with `qm config 100 | grep ^memory`)
+- 50GB Disk (`ide0` — not yet moved to VirtIO)
 
 **WIN11-01**
 - Windows 11 Enterprise
-- 2 CPU
-- 4GB RAM
-- 60GB disk
+- 4 CPU (bumped from 2, while diagnosing lag — see [[Proxmox Lab Setup]])
+- 6GB RAM (bumped from 4GB, same session)
+- 60GB disk (`ide0` — not yet moved to VirtIO)
+- CPU type: `x86-64-v2-AES` (was `cpu: host`, inherited from the AMD A8 build — caused visible lag once running on the lab node's Intel CPU; this was the actual fix, not the RAM/CPU bump)
 
 ![](attachments/Pasted%20image%2020260531005219.png)
 
