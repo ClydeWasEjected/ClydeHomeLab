@@ -72,7 +72,6 @@ flowchart TB
         gp["🎮 Gaming PC<br/>offensive-security VMs"]
     end
     subgraph planned["Planned"]
-        ry["Ryzen 5 PRO mini PC<br/>Docker / security services"]
         va["Vaio<br/>lightweight services"]
     end
     classDef on fill:#2da44e,stroke:#2da44e,color:#fff
@@ -80,12 +79,12 @@ flowchart TB
     classDef plan fill:#6e7781,stroke:#6e7781,color:#fff
     class a8 on
     class gp dem
-    class ry,va plan
+    class va plan
 ```
 
 - **A8**: primary infrastructure node. Runs Proxmox bare metal, hosts pfSense, DC01, and WIN11-01. This is the "corporate network" side of the lab.
 - **Gaming PC**: secondary Proxmox node, reserved for on-demand offensive-security VMs (Kali, vulnerable machines). Kept separate from A8 so infra-critical services (pfSense, DC01) never depend on a machine that dual-boots and isn't always on.
-- **Ryzen 5 PRO mini PC (planned)**: future node for Docker/security services and offensive workloads, once RAM is expanded.
+- **Ryzen 5 PRO mini PC**: not available (2026-09-24). Workloads once planned for it need another home.
 - **Vaio (planned)**: future lightweight-services node (Pi-hole, Home Assistant, Docker), explicitly kept as a "migrate an old machine into the lab" exercise.
 
 ## 5. Documentation structure (how we keep this from becoming one giant file)

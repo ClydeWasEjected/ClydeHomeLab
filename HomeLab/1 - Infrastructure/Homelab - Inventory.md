@@ -53,7 +53,7 @@ flowchart TB
 |---|---|---|---|---|
 |A8 (HP laptop)|Primary Proxmox node (bare metal)|AMD A8-9425, 24GB RAM|🟢 Active|Infra-critical only now: pfSense. DC01/WIN11-01 moved to the lab node 2026-09-23 (see [[Proxmox Lab Setup]]); powered-off rollback copies of both kept here|
 |Gaming PC (proxmox-lab)|Secondary Proxmox node (standalone, not clustered)|i5 10th-gen, 6C/12T, 16GB RAM|🟢 Active|Hosts DC01 + WIN11-01, migrated from A8 2026-09-23 via backup/restore. See [[Proxmox Lab Setup]]|
-|Ryzen 5 PRO 2400G mini PC|Docker / security services node (planned)|RAM expansion to 32GB planned|⬜ Not yet racked|Offensive-security and service workloads once online|
+|Ryzen 5 PRO 2400G mini PC|Docker / security services node|n/a|⚫ Not available|Not available as of 2026-09-24. Don't plan workloads on it|
 |Vaio (Pentium 2020M)|Lightweight services node (planned)|4GB RAM|⬜ Not yet implemented|Migration exercise + Pi-hole/Home Assistant/Docker|
 |~~Ryzen 3 / 8GB mini PC~~|n/a|n/a|⚫ Discarded|No longer part of the plan|
 
