@@ -21,6 +21,21 @@ Related: [[Claude Server Design]] · [Homelab - Inventory](<Homelab - Inventory.
 
 Laptop side: Syncthing v2 unpacked to `%LOCALAPPDATA%\Programs\Syncthing`, started at logon by the `Syncthing` scheduled task, GUI on `127.0.0.1:8384`.
 
+### Remote Control (planned, not running)
+
+`claude remote-control` is Claude Code's server mode: it waits for sessions started from claude.ai/code or the Claude app. Planned as systemd unit `/etc/systemd/system/claude-rc.service`:
+
+| Setting | Value |
+|---|---|
+| `User` | `clyde` (never root) |
+| `WorkingDirectory` | `/home/clyde/vault` |
+| `ExecStart` | `/home/clyde/.local/bin/claude remote-control --name claude-srv` |
+| `Restart` | `on-failure` |
+| `After` / `Wants` | `network-online.target` |
+| `WantedBy` | `multi-user.target` |
+
+No `--permission-mode bypassPermissions`: remote sessions keep asking before acting.
+
 ### Daily use
 
 ```bash
@@ -41,4 +56,11 @@ cd ~/vault && claude
 - Paired Syncthing, added the three folders.
 - **Verification:** all three folders idle with 0 errors on both sides. Laptop to server, server to laptop and delete propagation tested per folder.
 - **Issue:** laptop to server changes in the memory folder never arrived. Cause: nested folder not seen by the Windows file watcher. Fixed with a 60 s rescan on the two Claude folders.
-- **Pending:** Tailscale login, GitHub key registration, Claude Code login, pfSense DHCP static mapping, add Tailscale address to the laptop's Syncthing device entry.
+- Tailscale joined (`100.88.249.127`), GitHub deploy key `claude-srv` added with write access (first push `1b2fc47` succeeded), Claude Code logged in, Tailscale address added to the laptop's Syncthing device entry.
+- **Pending:** pfSense DHCP static mapping for `10.10.10.124`.
+
+### 2026-09-24: Remote Control design, Homepage card
+
+- Chose `claude remote-control` as a systemd service over a dashboard button that runs commands. Homepage has no authentication, so a command button would let anyone on the LAN run it. Remote Control is authenticated by the Anthropic account.
+- **Status:** unit file designed (see Current State), **not yet created**: `systemctl status claude-rc` returns "could not be found" (checked 2026-09-24).
+- Added to the Homepage dashboard with `ping 10.10.10.124`. Note: `ping` from *inside* claude-srv fails (`Operation not permitted`, no `CAP_NET_RAW` in the unprivileged CT); pinging it from outside works.

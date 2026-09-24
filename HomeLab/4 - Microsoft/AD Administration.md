@@ -42,6 +42,16 @@ ad.jnclydehl.local
 ### Naming Conventions
 - OUs: `<Department> → Users / Computers / Groups`
 - Groups: `SG_<Department>_<Function>`
+- Accounts (apply to AD **and** local Linux/Windows accounts, all lowercase, max 20 chars to fit `sAMAccountName`):
+
+| Type | Pattern | Example | Rule |
+|---|---|---|---|
+| Daily user | `<handle>` | `jnclyde` | Email, browsing, docs. Never holds admin rights. |
+| Admin | `adm-<daily name>` | `adm-jnclyde` | Privileged work only. Not used for email or browsing. |
+| Service | `svc-<app>` | `svc-homepage` | One per app, never a person. Lives in the `Service Accounts` OU. |
+| Generic/shared | not allowed | `admin`, `it` | No accountability. |
+
+Servers that only get administered (e.g. `svc-01`) carry the admin account only.
 
 > [!info] Why this structure
 > Departments chosen (IT / Security / Operations) instead of a generic business template map to real permission narratives relevant to a security career path — see [[Active Directory Design]] for full rationale.
@@ -62,6 +72,14 @@ ad.jnclydehl.local
 - [ ] Moved a test user between OUs, confirmed update
 
 **Issues:** 
+
+---
+
+### 2026-09-24: Account naming convention
+**Changed:** Added daily / admin / service account patterns under Naming Conventions.
+**Why:** Separate admin accounts keep stolen daily credentials from carrying admin rights (tiered admin model). One convention across AD and Linux keeps a later `realmd`/`sssd` join clean.
+**Applied:** `adm-jnclyde` on `svc-01`.
+**Trade-off accepted:** handle-based usernames are guessable (password spraying risk). Mitigated later by lockout policy (C4) and monitoring, not by obscure usernames.
 
 ---
 

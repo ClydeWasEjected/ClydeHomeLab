@@ -36,6 +36,8 @@ DHCP range on every VLAN: `.100–.199`.
 | DC01              | **Temporary: `10.10.10.21`, Legacy LAN.** Design target is `10.10.20.21`, VLAN 20 (Servers) | `192.168.0.21` in `DC01.md`; `10.10.10.21` in an old pfSense rule (now reused, not stale); `10.10.20.21` is the intended VLAN 20 address, confirmed in `pfSense Configuration.md` and `Active Directory Lab.md` | Moved to `proxmox-lab` 2026-09-23, which has no VLAN trunk to the A8 yet — see [[Proxmox Lab Setup]] §"VLAN 20 broken by the move" |
 | WIN11-01          | **Temporary: `10.10.10.22`, Legacy LAN.** Design target is `10.10.20.22`, VLAN 20 (Servers), gateway `10.10.20.1`, DNS `10.10.20.21` | `192.168.0.22 (planned)` in `Proxmox Setup.md`                                                                                                                     | Same cause as DC01 above — moved to `proxmox-lab` before VLAN 20 trunking existed          |
 | claude-srv (CT 105 on A8) | `10.10.10.124` (DHCP, legacy LAN), no static mapping yet |                                                                                                                                                                     | New as of 2026-09-23, see [[claude-srv]]                                                  |
+| svc-01 (CT 106 on A8) | `10.10.10.30` (static, legacy LAN) |                                                                                                                                                                     | New as of 2026-09-24, replaces privileged CT 104. See [[svc-01]]                          |
+| Ubuntu (VM 103 on A8) | Unknown, stopped | Not documented anywhere | Found 2026-09-24 in `qm list`. Purpose unknown, needs the same audit CT 104 got |
 | Main PC           | `10.10.10.23` (legacy LAN)                                                |                                                                                                                                                                    | Pending migration to Management VLAN (10)                                                 |
 | Domain name       | `ad.jnclydehl.local` — confirmed via live DNS query (2026-09-16 incident), docs updated 2026-09-18 | Historical: `jnclydehl.local` (old Overview/Design text), `jn.clydehl.local` (typo in `DC01.md` build log) | Resolved — see [[Active Directory Design]] and [[DC01]]                                   |
 | NetBIOS           | `JNCLYDEHL`                                                               | consistent everywhere it appears                                                                                                                                   |                                                                                           |
@@ -47,7 +49,9 @@ DHCP range on every VLAN: `.100–.199`.
 |pfSense|VM on A8 (Proxmox)|Router/firewall, DHCP, DNS forwarding, VLAN segmentation|
 |Active Directory Domain Services + DNS|DC01 (VM on A8)|Domain authentication, name resolution for the domain|
 |Claude Code + Syncthing|claude-srv (CT 105 on A8)|Always-on Claude sessions; vault and Claude memory synced with the laptop. See [[Claude Server Design]]|
-|Tailscale|Installed on the A8 Proxmox host only|Secure remote management of Proxmox (and by extension all VMs/consoles) without exposing ports to the internet|
+|Docker|svc-01 (CT 106 on A8)|Container host for lab services. See [[svc-01]]|
+|Homepage dashboard|svc-01, `http://10.10.10.30:3000`|Links and up/down status for every lab service. See [[Homepage]]|
+|Tailscale|A8 Proxmox host, claude-srv, laptop, iPhone|Secure remote management of Proxmox (and by extension all VMs/consoles) without exposing ports to the internet|
 
 ## 5. Known documentation debt (last reviewed 2026-09-18)
 

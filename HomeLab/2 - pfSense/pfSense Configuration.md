@@ -31,7 +31,7 @@ but are empty — see Known Pending Items.
 ### Active Firewall Rules — LAN (legacy)
 | # | Protocol | Source | Destination | Port | Action | Description |
 |---|---|---|---|---|---|---|
-| — | * | * | LAN Address | 80 | Pass | Anti-Lockout Rule (default) |
+| — | * | * | LAN Address | 443, 80 | Pass | Anti-Lockout Rule (default). Follows the WebGUI port: 443 for HTTPS, 80 for the redirect |
 | 1 | any | LAN net | 10.10.10.21 | any | Pass | ⚠️ Stale — DC01 moved to `10.10.20.21` |
 | 2 | TCP | 10.10.10.8 (main PC) | 192.168.0.20 | 8006 | Pass | Allow main PC → Proxmox WebUI |
 | 3 | any | LAN net | !LAN net | any | Pass | Allow LAN → Internet |
@@ -50,6 +50,13 @@ but are empty — see Known Pending Items.
 
 No inter-VLAN rules exist yet — default-deny between segments until 
 deliberate rules are added.
+
+## WebGUI
+| Item | Value |
+|---|---|
+| URL | `https://10.10.10.1` |
+| Protocol | HTTPS, default self-signed certificate |
+| HTTP (80) | 301 redirect to HTTPS |
 
 ## NAT
 Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
@@ -144,3 +151,10 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 ### **2026-09-16 — Aftermath of the issue**
 - **DHCP Static Mapping**: Static mapping had an issue since it detected that the main laptop´s IP is already taken by a different device, so we had to change it from 10.10.10.8 to 10.10.10.23.
 - **Firewall Proxmox Rule:** Since we have changed the IP address of the main laptop we had to modify the firewall rule source.
+
+### 2026-09-24: WebGUI switched from HTTP to HTTPS
+- **Found while:** building the Homepage dashboard. Its `siteMonitor` check on `https://10.10.10.1` stayed red.
+- **Diagnosis (from `10.10.10.124`, same LAN):** `https://10.10.10.1` timed out, `http://10.10.10.1` returned 200. The WebGUI was served over plain HTTP. The anti-lockout rule only passes the GUI's own port (80), so 443 hit the default deny and was dropped silently (timeout, not "refused").
+- **Why it matters:** over HTTP the admin password crossed the LAN in clear text, readable by anyone capturing traffic.
+- **Fix:** `System > Advanced > Admin Access` > Protocol: HTTPS (SSL/TLS), default self-signed certificate.
+- **Verification:** `https://10.10.10.1` returns HTTP/2 200, `http://10.10.10.1` returns 301 to HTTPS, dashboard `siteMonitor` green. No firewall rule was added: the anti-lockout rule followed the port change on its own.
