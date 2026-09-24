@@ -106,6 +106,6 @@ flowchart LR
 ## 6. Known open items
 
 - [ ] Several docs still reference the pre-VLAN legacy IP scheme (`10.10.10.x` / `192.168.0.x`) and need a pass to confirm/update against current state tracked in [Homelab - Inventory](Homelab%20-%20Inventory.md).
-- [x] ~~Domain name written inconsistently across docs~~: resolved 2026-09-18, canonical form is `ad.jnclydehl.local` (see [Homelab - Inventory](Homelab%20-%20Inventory.md) §3). NetBIOS name still needs a live confirm.
+- [x] ~~Domain name written inconsistently across docs~~: resolved 2026-09-18, canonical form is `ad.jnclydehl.local` (see [Homelab - Inventory](Homelab%20-%20Inventory.md) §3). NetBIOS `JNCLYDEHL` confirmed live 2026-09-24.
 - [ ] Proxmox management UI (`192.168.0.20`) still sits outside pfSense, on the ISP router's network, not yet migrated behind the firewall.
 - [ ] No inter-VLAN firewall rules exist yet (default-deny between segments, which is correct for now, but Phase B isn't complete until deliberate inter-VLAN rules are added).

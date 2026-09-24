@@ -66,14 +66,13 @@ flowchart LR
 | Setting | Value |
 |---|---|
 | Domain | `ad.jnclydehl.local` |
-| NetBIOS | likely `AD` (see caveat below) |
+| NetBIOS | `JNCLYDEHL` |
 | Forest Type | Single Domain Forest |
 | Functional Level | Windows Server 2022 |
 
 - Domain: `ad.jnclydehl.local`, confirmed live via a direct DNS query against DC01 during the 2026-09-16 troubleshooting session (valid SOA returned). `DC01.md`'s build log says `jn.clydehl.local`, which is almost certainly a transcription error in that doc, not the real forest name. See [[DC01]].
 
-> [!WARNING] NetBIOS not confirmed
-> NetBIOS: likely `AD` (auto-derived from the domain above, matches the `AD\Administrator` whoami output in [[WIN11-01]]), not the `JNCLYDEHL` originally intended. Cheap to confirm with `Get-ADDomain` next time you're on DC01: do that and remove this caveat.
+- NetBIOS: `JNCLYDEHL`, confirmed live via `Get-ADDomain` on 2026-09-24.
 
 ## Why this structure
 
