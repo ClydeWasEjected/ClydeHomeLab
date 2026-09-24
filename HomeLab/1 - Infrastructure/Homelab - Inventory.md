@@ -163,6 +163,7 @@ flowchart LR
 |Claude Code + Syncthing|claude-srv (CT 105 on A8)|Always-on Claude sessions; vault and Claude memory synced with the laptop. See [[Claude Server Design]]|
 |Docker|svc-01 (CT 106 on A8)|Container host for lab services. See [[svc-01]]|
 |Homepage dashboard|svc-01, `http://10.10.10.30:3000`|Links and up/down status for every lab service. See [[Homepage]]|
+|Hermes report emails|claude-srv, timers 08:00 / 22:00|Morning report and evening recap by email, written by Claude from live facts. See [[Hermes]]|
 |Tailscale|A8 Proxmox host, claude-srv, laptop, iPhone|Secure remote management of Proxmox (and by extension all VMs/consoles) without exposing ports to the internet|
 
 ## 5. Known documentation debt (last reviewed 2026-09-18)
