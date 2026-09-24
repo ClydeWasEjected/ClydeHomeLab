@@ -1,6 +1,6 @@
 # svc-01
 
-Related: [Homelab - Inventory](<Homelab - Inventory.md>) · [[Proxmox Administration]] · [[claude-srv]]
+Related: [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>) · [[Proxmox Administration]] · [[claude-srv]]
 
 Docker host for lab services. First workload: the Homepage dashboard. Temporary home for containers until the Ryzen node is racked.
 

@@ -1,6 +1,6 @@
 # Homepage Design
 
-Related: [[Homepage]] · [[svc-01]] · [Homelab - Inventory](<Homelab - Inventory.md>)
+Related: [[Homepage]] · [[svc-01]] · [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>)
 
 Services dashboard for the lab: one page listing every service with its link and an up/down status, usable from the laptop and the phone.
 

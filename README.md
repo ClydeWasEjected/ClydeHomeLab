@@ -82,11 +82,12 @@ Docs are split by service: a **Design** doc (architecture and rationale), a **bu
 
 | Area | Docs |
 |---|---|
-| 🖥️ Infrastructure | [Project Overview](<HomeLab/1 - Infrastructure/Homelab - Project Overview.md>) · [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>) · [Proxmox Setup](<HomeLab/1 - Infrastructure/Proxmox Setup.md>) · [Proxmox Administration](<HomeLab/1 - Infrastructure/Proxmox Administration.md>) |
+| 🖥️ Infrastructure | [Project Overview](<HomeLab/1 - Infrastructure/Homelab - Project Overview.md>) · [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>) · [Proxmox Setup](<HomeLab/1 - Infrastructure/Proxmox Setup.md>) · [Proxmox Administration](<HomeLab/1 - Infrastructure/Proxmox Administration.md>) · [Proxmox Lab Setup](<HomeLab/1 - Infrastructure/Proxmox Lab Setup.md>) |
 | 🔥 pfSense | [Design](<HomeLab/2 - pfSense/pfSense Design.md>) · [Installation](<HomeLab/2 - pfSense/pfSense Installation.md>) · [Network Configuration](<HomeLab/2 - pfSense/pfSense Network Configuration.md>) · [Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>) |
 | 🌐 Remote Access | [Tailscale](<HomeLab/3 - Remote Access/Tailscale.md>) |
 | 🪟 Microsoft / AD | [Active Directory Design](<HomeLab/4 - Microsoft/Active Directory Design.md>) · [AD Administration](<HomeLab/4 - Microsoft/AD Administration.md>) · [DC01](<HomeLab/4 - Microsoft/DC01.md>) · [WIN11-01](<HomeLab/4 - Microsoft/WIN11-01.md>) |
 | ⚙️ Automation | [Design](<HomeLab/5 - Automation/Automation Design.md>) · [Administration](<HomeLab/5 - Automation/Automation Administration.md>) |
+| 🧩 Services | [Claude Server Design](<HomeLab/6 - Services/Claude Server Design.md>) · [claude-srv](<HomeLab/6 - Services/claude-srv.md>) · [svc-01](<HomeLab/6 - Services/svc-01.md>) · [Homepage Design](<HomeLab/6 - Services/Homepage Design.md>) · [Homepage](<HomeLab/6 - Services/Homepage.md>) |
 | 📋 Ops | [Incidents Log](<HomeLab/Incidents Log.md>) |
 
 ## 🚫 Deliberate non-goals (for now)

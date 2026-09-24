@@ -1,6 +1,6 @@
 # Claude Server Design
 
-Related: [[claude-srv]] · [Homelab - Inventory](<Homelab - Inventory.md>) · [[Proxmox Administration]] · [[Tailscale]]
+Related: [[claude-srv]] · [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>) · [[Proxmox Administration]] · [[Tailscale]]
 
 ## Current State
 
