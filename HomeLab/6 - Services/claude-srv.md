@@ -33,7 +33,11 @@ flowchart LR
 
 Laptop side: Syncthing v2 unpacked to `%LOCALAPPDATA%\Programs\Syncthing`, started at logon by the `Syncthing` scheduled task, GUI on `127.0.0.1:8384`.
 
-### Remote Control (planned, not running)
+### Remote Control
+
+**Running (verified 2026-09-24):** `claude rc` (server mode) started by hand inside the `tmux` session `claude`. Clyde drives sessions from the Claude app on his phone. It does **not** survive a reboot or a tmux crash yet: the systemd unit below is still to be created.
+
+#### systemd unit (planned)
 
 `claude remote-control` is Claude Code's server mode: it waits for sessions started from claude.ai/code or the Claude app. Planned as systemd unit `/etc/systemd/system/claude-rc.service`:
 
@@ -75,5 +79,5 @@ cd ~/vault && claude
 ### 2026-09-24: Remote Control design, Homepage card
 
 - Chose `claude remote-control` as a systemd service over a dashboard button that runs commands. Homepage has no authentication, so a command button would let anyone on the LAN run it. Remote Control is authenticated by the Anthropic account.
-- **Status:** unit file designed (see Current State), **not yet created**: `systemctl status claude-rc` returns "could not be found" (checked 2026-09-24).
+- **Status:** Remote Control runs as `claude rc` inside tmux, used from the phone all session. The systemd unit is still not created (`systemctl status claude-rc`: not found), so it won't come back after a reboot.
 - Added to the Homepage dashboard with `ping 10.10.10.124`. Note: `ping` from *inside* claude-srv fails (`Operation not permitted`, no `CAP_NET_RAW` in the unprivileged CT); pinging it from outside works.
