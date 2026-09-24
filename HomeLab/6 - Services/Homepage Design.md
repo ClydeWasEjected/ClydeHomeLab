@@ -4,6 +4,20 @@ Related: [[Homepage]] · [[svc-01]] · [Homelab - Inventory](<../1 - Infrastruct
 
 Services dashboard for the lab: one page listing every service with its link and an up/down status, usable from the laptop and the phone.
 
+```mermaid
+flowchart LR
+    you(["💻 📱 You"]) -- "opens" --> hp["Homepage<br/>svc-01 :3000"]
+    hp -- "siteMonitor (web UI)" --> pf["pfSense"]
+    hp -- "siteMonitor (web UI)" --> px["Proxmox A8 + lab"]
+    hp -- "ping (no web UI)" --> ad["DC01 · WIN11-01"]
+    hp -- "ping (no web UI)" --> sv["claude-srv · svc-01"]
+    you -. "click a card (href)" .-> px
+    classDef h fill:#2da44e,stroke:#2da44e,color:#fff
+    class hp h
+```
+
+<sub>Solid lines: status checks, run **from the container**. Dotted line: links, opened **by your browser**.</sub>
+
 ## Decisions
 
 | Decision | Choice | Why |
@@ -17,11 +31,34 @@ Services dashboard for the lab: one page listing every service with its link and
 
 ## Security rules
 
-- Homepage has **no authentication**. Anyone who can reach `10.10.10.30:3000` sees the whole map of the lab.
+```mermaid
+flowchart LR
+    ok["✅ Allowed"] --- a1["LAN access"]
+    ok --- a2["Tailscale access"]
+    ok --- a3["Read-only API tokens"]
+    no["❌ Never"] --- n1["Port forward on the router"]
+    no --- n2["Buttons that start VMs or run commands"]
+    no --- n3["Credentials in YAML"]
+    classDef g fill:#2da44e,stroke:#2da44e,color:#fff
+    classDef r fill:#cf222e,stroke:#cf222e,color:#fff
+    class ok g
+    class no r
+```
+
+> [!CAUTION]
+> Homepage has **no authentication**. Anyone who can reach `10.10.10.30:3000` sees the whole map of the lab.
+
 - **Never port-forward it.** Remote access only through Tailscale.
 - **No control actions** (start VM, run command) from the dashboard. Control stays inside tools that authenticate (Proxmox, SSH, claude.ai). API tokens, when added for widgets, are **read-only**.
 - No credentials in YAML files.
 
 ## Remote access (phone)
+
+```mermaid
+flowchart LR
+    ph["📱 iPhone"] -- "tailnet" --> ts{{"Tailscale"}}
+    ts -- "works once svc-01 joins<br/>the tailnet or a subnet route exists" --> hp["Homepage"]
+    ts -. "links to 10.10.10.x need a<br/>subnet router for 10.10.10.0/24" .-> lan["Lab services"]
+```
 
 Tailscale. The dashboard itself is reachable on `svc-01` once it joins the tailnet or a subnet route exists. Links to `10.10.10.x` only work from the phone once a Tailscale **subnet router** advertises `10.10.10.0/24`. Pending, see [[Homepage]].

@@ -1,4 +1,31 @@
+# Proxmox Administration
+
 **Host:** A8 (proxmox-a8), see [[Proxmox Setup]]
+
+```mermaid
+flowchart TB
+    subgraph host["proxmox-a8"]
+        usb["enx00e04c4d6938<br/>USB NIC"] --> vmbr0["vmbr0 · WAN<br/>192.168.0.0/24"]
+        nic0["nic0<br/>physical NIC"] --> vmbr1["vmbr1 · Lab LAN<br/>10.10.10.0/24"]
+        vmbr0 --> pf["pfSense VM"]
+        vmbr1 --> pf
+        vmbr1 --> vms["VMs / CTs<br/>(tap interfaces)"]
+    end
+    subgraph wd["Watchdogs (systemd timers, every 60s)"]
+        w1["fix-orphan-taps<br/>re-attaches taps with no bridge"]
+        w2["fix-down-interfaces<br/>brings watched interfaces back up"]
+    end
+    w1 -. "watches" .-> vms
+    w2 -. "watches" .-> usb
+    w2 -. "watches" .-> nic0
+    w2 -. "watches" .-> vmbr0
+    w2 -. "watches" .-> vmbr1
+```
+
+| Watchdog | Catches | Fix it applies | Log |
+|---|---|---|---|
+| fix-orphan-taps | a `tapXXXiY` with no `master` bridge | `ip link set <tap> master <bridge>` | `/var/log/bridge-tap-watchdog.log` |
+| fix-down-interfaces | a watched interface that is admin-down | `ip link set <iface> up` | `/var/log/iface-down-watchdog.log` |
 
 **Watchdog: fix-orphan-taps**
 - Script (tracked in repo): [[fix-orphan-taps.sh]] (`HomeLab/5 - Automation/scripts/fix-orphan-taps.sh`)
@@ -30,6 +57,13 @@
 
 **Symptom:** [[pfSense Configuration]] showed the LAN interface with the correct IP from inside the VM, but the corresponding host side tap (`tap102i1`, later reproduced with `tap103i1` during testing) had no `master` in `bridge link`. Traffic reached the tap and went nowhere from there: LAN clients got no DHCP lease, pfSense webConfigurator unreachable over LAN.
 
+```mermaid
+flowchart LR
+    a["Toggle Firewall checkbox<br/>on a running VM NIC"] --> b["tap recreated<br/>without a bridge"] --> c["traffic reaches the tap<br/>and goes nowhere"] --> d["❌ no DHCP,<br/>no pfSense GUI"]
+    classDef bad fill:#cf222e,stroke:#cf222e,color:#fff
+    class d bad
+```
+
 **Manual fix:**
 ```bash
 ip link set <tap> master <bridge>
@@ -37,13 +71,20 @@ ip link set <tap> master <bridge>
 
 **Automated fix:** `fix-orphan-taps.sh`. Loops through every `tapXXXiY` interface on the host, checks whether it has a `master`, and if not, queries `qm config <vmid>` to find the expected bridge, reattaches it with `ip link set`, and logs timestamp, tap, and bridge.
 
+```mermaid
+flowchart LR
+    t["⏱️ timer<br/>every 60s"] --> l["loop over every<br/>tapXXXiY"] --> q{"has a<br/>master?"}
+    q -- "yes" --> ok(["skip"])
+    q -- "no" --> c["qm config VMID<br/>→ expected bridge"] --> f["ip link set<br/>master BRIDGE"] --> lg["log timestamp,<br/>tap, bridge"]
+```
+
 **Automation:** systemd `.service` (oneshot) + `.timer` (60s) instead of cron, for `journalctl` integration.
 
 **Verification:** tested end to end by forcing `ip link set tap103i1 nomaster`. The watchdog detected and reattached it automatically within the next timer run (≤60s), confirmed via `bridge link` and `journalctl -u fix-orphan-taps.service`.
 
-**Pending:**
-- Verify VM 103's net1 config persists correctly across a host reboot, not just when set live
-- Confirm whether the hotplug bug is consistently reproducible or intermittent
+> [!NOTE] Pending
+> - Verify VM 103's net1 config persists correctly across a host reboot, not just when set live
+> - Confirm whether the hotplug bug is consistently reproducible or intermittent
 
 ### 2026-09-18: Script tracked in repo, bugs fixed
 

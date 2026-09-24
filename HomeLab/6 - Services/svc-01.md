@@ -4,6 +4,20 @@ Related: [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>) �
 
 Docker host for lab services. First workload: the Homepage dashboard. Temporary home for containers until the Ryzen node is racked.
 
+```mermaid
+flowchart TB
+    subgraph a8["proxmox-a8"]
+        subgraph ct["svc-01 · CT 106 · unprivileged · 10.10.10.30"]
+            subgraph dk["Docker"]
+                hp["homepage<br/>:3000"]
+            end
+        end
+    end
+    lan["Legacy LAN"] --> ct
+    classDef c fill:#2da44e,stroke:#2da44e,color:#fff
+    class hp c
+```
+
 ## Current State
 
 | Item | Value |
@@ -23,6 +37,15 @@ Docker host for lab services. First workload: the Homepage dashboard. Temporary 
 ### 2026-09-24: Built, replaces CT 104
 
 - **Why:** CT 104 (`ubuntu`) was an undocumented test container found during the dashboard planning. Audit results:
+
+| | CT 104 (destroyed) | CT 106 svc-01 |
+|---|---|---|
+| Privileged | ❌ yes, root in CT = root on A8 | ✅ no |
+| AppArmor | ❌ `unconfined` | ✅ default |
+| IP | DHCP `10.10.10.125` | static `10.10.10.30` |
+| Start at boot | off | on |
+| Documented | ❌ no | ✅ yes |
+
   - **Privileged** (`unprivileged: 0`) with `lxc.apparmor.profile: unconfined`. Root in the container was root on the A8, the host that runs pfSense.
   - Ran Docker (official repo) with a `netbootxyz` PXE container (TFTP `69/udp`, web `3000/tcp` on all interfaces) plus 4 leftover `hello-world` containers.
   - Shell history showed AppArmor being disabled by hand to get Docker to start.

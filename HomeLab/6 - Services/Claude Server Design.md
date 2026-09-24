@@ -4,7 +4,32 @@ Related: [[claude-srv]] · [Homelab - Inventory](<../1 - Infrastructure/Homelab 
 
 ## Current State
 
-**Goal:** Claude Code sessions that keep running when the laptop sleeps or is closed, with the same docs, memory and instructions on both machines and no manual sync step.
+> [!NOTE] Goal
+> Claude Code sessions that keep running when the laptop sleeps or is closed, with the same docs, memory and instructions on both machines and no manual sync step.
+
+```mermaid
+flowchart LR
+    subgraph laptop["💻 Laptop (Windows)"]
+        ob["Obsidian vault"]
+        lc["~/.claude<br/>CLAUDE.md + memory"]
+    end
+    subgraph srv["🖥️ claude-srv (CT 105 on A8, always on)"]
+        v["~/vault"]
+        sc["~/.claude"]
+        cc["Claude Code in tmux"]
+        g["git"]
+    end
+    ob <-->|"Syncthing (LAN only)"| v
+    lc <-->|"Syncthing (LAN only)"| sc
+    v --> cc
+    sc --> cc
+    v --> g --> gh[("GitHub")]
+    you(["📱 You, anywhere"]) -- "Tailscale + SSH (key only)" --> cc
+    classDef s fill:#2da44e,stroke:#2da44e,color:#fff
+    class srv s
+```
+
+<sub>Git runs only on the server (one writer). Secrets never sync: each host has its own.</sub>
 
 | Decision | Choice | Why |
 |---|---|---|
@@ -31,7 +56,8 @@ Related: [[claude-srv]] · [Homelab - Inventory](<../1 - Infrastructure/Homelab 
 
 ### Known limitation
 
-`homelab-memory` sits inside the `claude-config` folder root. On Windows the file watcher does not report changes in that nested folder, so the two Claude folders rescan every 60 seconds instead of relying on the watcher. The vault is not nested and syncs within about 10 seconds.
+> [!WARNING] Nested folder not watched on Windows
+> `homelab-memory` sits inside the `claude-config` folder root. On Windows the file watcher does not report changes in that nested folder, so the two Claude folders rescan every 60 seconds instead of relying on the watcher. The vault is not nested and syncs within about 10 seconds.
 
 ## Change Log
 

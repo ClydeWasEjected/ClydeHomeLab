@@ -1,6 +1,8 @@
+# pfSense Configuration
+
 # Current State (as of 2026-09-11)
 
-## IP Allocation Scheme (Legacy LAN — 10.10.10.0/24)
+## IP Allocation Scheme (Legacy LAN, 10.10.10.0/24)
 | Range | Purpose |
 |---|---|
 | `.1` | pfSense LAN gateway |
@@ -8,6 +10,20 @@
 | `.100–.199` | DHCP dynamic pool |
 | `.200–.254` | Reserved for future use |
 
+```mermaid
+flowchart LR
+    g[".1<br/>gateway"] --- s[".2 to .99<br/>static reservations"] --- d[".100 to .199<br/>DHCP pool"] --- r[".200 to .254<br/>reserved"]
+    classDef a fill:#1f6feb,stroke:#1f6feb,color:#fff
+    classDef b fill:#8957e5,stroke:#8957e5,color:#fff
+    classDef c fill:#2da44e,stroke:#2da44e,color:#fff
+    classDef e fill:#6e7781,stroke:#6e7781,color:#fff
+    class g a
+    class s b
+    class d c
+    class r e
+```
+
+> [!NOTE]
 > Legacy LAN still exists and carries the AP/WiFi and any untagged 
 > devices. Being phased out as VLANs take over.
 
@@ -21,26 +37,46 @@
 
 DHCP range on every VLAN: `.100–.199`.
 
-**VLAN status**: only **Servers (20)** has real devices on it (DC01 
-confirmed working). Management, Clients, and Security exist in pfSense 
-but are empty — see Known Pending Items.
+> [!NOTE] VLAN status
+> Only **Servers (20)** has real devices on it (DC01 
+> confirmed working). Management, Clients, and Security exist in pfSense 
+> but are empty: see Known Pending Items.
 
 ![DC01 confirmed correct IP/gateway on Servers VLAN](attachments/Pasted%20image%2020260910164013.png)
 ![DC01 network details after VLAN migration](attachments/Pasted%20image%2020260910164024.png)
 
-### Active Firewall Rules — LAN (legacy)
+### Active Firewall Rules: LAN (legacy)
+
+pfSense checks rules **top to bottom, first match wins**. Anything that matches no rule is dropped.
+
+```mermaid
+flowchart TB
+    p(["Packet arrives on LAN"]) --> al{"To LAN address,<br/>GUI port?"}
+    al -- "yes" --> A1["✅ Anti-Lockout"]
+    al -- "no" --> r1{"Rule 1: to 10.10.10.21?"}
+    r1 -- "yes" --> A2["✅ pass"]
+    r1 -- "no" --> r2{"Rule 2: main PC to<br/>192.168.0.20:8006?"}
+    r2 -- "yes" --> A3["✅ pass"]
+    r2 -- "no" --> r3{"Rule 3: to anything<br/>outside LAN net?"}
+    r3 -- "yes" --> A4["✅ pass (internet)"]
+    r3 -- "no" --> D["❌ default deny (silent drop)"]
+    classDef ok fill:#2da44e,stroke:#2da44e,color:#fff
+    classDef bad fill:#cf222e,stroke:#cf222e,color:#fff
+    class A1,A2,A3,A4 ok
+    class D bad
+```
 | # | Protocol | Source | Destination | Port | Action | Description |
 |---|---|---|---|---|---|---|
-| — | * | * | LAN Address | 443, 80 | Pass | Anti-Lockout Rule (default). Follows the WebGUI port: 443 for HTTPS, 80 for the redirect |
-| 1 | any | LAN net | 10.10.10.21 | any | Pass | ⚠️ Stale — DC01 moved to `10.10.20.21` |
+| n/a | * | * | LAN Address | 443, 80 | Pass | Anti-Lockout Rule (default). Follows the WebGUI port: 443 for HTTPS, 80 for the redirect |
+| 1 | any | LAN net | 10.10.10.21 | any | Pass | ⚠️ Stale: DC01 moved to `10.10.20.21` |
 | 2 | TCP | 10.10.10.8 (main PC) | 192.168.0.20 | 8006 | Pass | Allow main PC → Proxmox WebUI |
 | 3 | any | LAN net | !LAN net | any | Pass | Allow LAN → Internet |
-| — | IPv4 | LAN subnets | any | any | Disabled | Legacy allow-any (kept as fallback) |
-| — | IPv6 | LAN subnets | any | any | Disabled | Unused |
+| n/a | IPv4 | LAN subnets | any | any | Disabled | Legacy allow-any (kept as fallback) |
+| n/a | IPv6 | LAN subnets | any | any | Disabled | Unused |
 
 ![Final LAN rules 1-3 configured](attachments/Pasted%20image%2020260910031956.png)
 
-### Active Firewall Rules — per VLAN
+### Active Firewall Rules: per VLAN
 | Interface | Source | Destination | Protocol | Action | Description |
 |---|---|---|---|---|---|
 | SERVERS | SERVERS subnet | any | any | Pass | Allow Servers → Internet |
@@ -48,8 +84,9 @@ but are empty — see Known Pending Items.
 | CLIENTS | CLIENTS subnet | any | any | Pass | Allow Clients → Internet |
 | SECURITY | SECURITY subnet | any | any | Pass | Allow Security → Internet |
 
-No inter-VLAN rules exist yet — default-deny between segments until 
-deliberate rules are added.
+> [!NOTE]
+> No inter-VLAN rules exist yet: default-deny between segments until 
+> deliberate rules are added.
 
 ## WebGUI
 | Item | Value |
@@ -64,33 +101,36 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 ![NAT outbound configuration](attachments/Pasted%20image%2020260910035318.png)
 
 ### Known Pending Items
-- **DC01 rule (#1) is stale** — still points to `10.10.10.21`
-- **Proxmox WebUI** sits outside pfSense entirely (`192.168.0.20:8006`, 
-  on the ISP router's network)
-- **AP/WiFi still on legacy flat LAN, untagged** — blocked on a managed 
-  switch/AP with 802.1Q support
-- **Main PC not yet migrated to Management VLAN**
+
+> [!WARNING] Known Pending Items
+> - **DC01 rule (#1) is stale**: still points to `10.10.10.21`
+> - **Proxmox WebUI** sits outside pfSense entirely (`192.168.0.20:8006`, 
+>   on the ISP router's network)
+> - **AP/WiFi still on legacy flat LAN, untagged**: blocked on a managed 
+>   switch/AP with 802.1Q support
+> - **Main PC not yet migrated to Management VLAN**
 
 ---
 
 # Change Log
 
-### 2026-09-08/09 — Initial LAN lockdown
+### 2026-09-08/09: Initial LAN lockdown
 - Found default "allow any" rule active on LAN, no restrictions
 
 ![Default LAN rules before lockdown](attachments/Pasted%20image%2020260909151237.png)
 
 - Added explicit rules: LAN→DC01, PC→Proxmox, LAN→Internet
 - Disabled (not deleted) the default allow-any rule
-- **Issue**: mobile lost internet — rule 3 was TCP-only, blocking DNS 
+- **Issue**: mobile lost internet: rule 3 was TCP-only, blocking DNS 
   (UDP). Fixed by setting protocol to `any`.
 
-> ⚠️ **Broken link found**: original doc referenced an alias creation 
+> [!WARNING] Broken link found
+> Original doc referenced an alias creation 
 > screenshot (`Pasted image 20260909151624.png`) that doesn't exist in 
 > the attachments folder. Either re-add it or remove the reference.
 
-### 2026-09-10 — DHCP range conflict
-- Attempted static mapping at `.50`, rejected — DHCP pool covered the 
+### 2026-09-10: DHCP range conflict
+- Attempted static mapping at `.50`, rejected: DHCP pool covered the 
   entire subnet
 
 ![DHCP static mapping rejected - IP within pool range](attachments/Pasted%20image%2020260910030141.png)
@@ -99,11 +139,11 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 
 ![DHCP pool range corrected](attachments/Pasted%20image%2020260910030105.png)
 
-### 2026-09-10 — NAT reviewed
-- Confirmed Automatic Outbound NAT, dynamic "WAN address" — correct for 
+### 2026-09-10: NAT reviewed
+- Confirmed Automatic Outbound NAT, dynamic "WAN address": correct for 
   a dynamic ISP-assigned public IP
 
-### 2026-09-11 — VLAN segmentation implemented
+### 2026-09-11: VLAN segmentation implemented
 - Enabled "VLAN aware" on Proxmox LAN bridge
 
 ![VLAN aware enabled on Proxmox bridge](attachments/Pasted%20image%2020260910154847.png)
@@ -121,10 +161,11 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 ![DHCP ranges configured per VLAN](attachments/Pasted%20image%2020260910160913.png)
 
 - Added baseline internet-access rule per VLAN
-- **Issue (repeat)**: rules set to TCP only initially — same mistake as 
+- **Issue (repeat)**: rules set to TCP only initially: same mistake as 
   the LAN lockdown. Fixed to `any`.
 
-> ⚠️ **Broken links found**: original doc referenced "Rule 2" and 
+> [!WARNING] Broken links found
+> Original doc referenced "Rule 2" and 
 > "Rule 3" firewall testing screenshots (`Pasted image 20260910032240.png` 
 > and `20260910032308.png`) that don't exist in attachments. Same issue 
 > as the alias screenshot above.
@@ -134,21 +175,21 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 
 ![DHCP static mapping moved to Servers interface](attachments/Pasted%20image%2020260910162101.png)
 
-### 2026-09-11 — Known blocker: physical VLAN segmentation incomplete
-- AP connects to the legacy flat LAN, untagged — MGMT/CLIENTS/SECURITY 
+### 2026-09-11: Known blocker: physical VLAN segmentation incomplete
+- AP connects to the legacy flat LAN, untagged: MGMT/CLIENTS/SECURITY 
   VLANs are configured but empty
 - Blocked on: managed switch or AP with 802.1Q support
 
-### **2026-09-16 — LAN gateway auto-selected as default, breaking WAN routing**
+### **2026-09-16: LAN gateway auto-selected as default, breaking WAN routing**
 
 - **Symptom:** LAN clients got valid DHCP leases and could reach the pfSense GUI, but had no internet access. WAN gateway (WAN_DHCP) showed "pending" in Status > Gateways.
 - **Root cause:** No IPv4 default gateway was explicitly pinned in System > Routing > Gateways. pfSense's automatic gateway-selection logic defaulted to LAN's gateway (LANGW) instead of WAN on every boot/reload, confirmed recurring across multiple reboots in system logs predating this session.
-- **Contributing/secondary issue:** During interface reassignment via console (20:13), dhcpd briefly failed to bind to LAN ("no subnet declaration for vtnet1") — transient, self-resolved by the next filter reload once the interface's IP was consistently applied.
+- **Contributing/secondary issue:** During interface reassignment via console (20:13), dhcpd briefly failed to bind to LAN ("no subnet declaration for vtnet1"): transient, self-resolved by the next filter reload once the interface's IP was consistently applied.
 - **Fix:** System > Routing > Gateways > edit WAN_DHCP > check "Default Gateway" (IPv4) > save.
 - **Verification:** Status > Gateways shows WAN_DHCP online (default); phone regained internet access.
-- **Follow-up:** NTP fails to sync (config syntax error in ntpd startup, every boot) — clock reliability affects log timestamp accuracy; needs separate fix.
+- **Follow-up:** NTP fails to sync (config syntax error in ntpd startup, every boot): clock reliability affects log timestamp accuracy; needs separate fix.
 
-### **2026-09-16 — Aftermath of the issue**
+### **2026-09-16: Aftermath of the issue**
 - **DHCP Static Mapping**: Static mapping had an issue since it detected that the main laptop´s IP is already taken by a different device, so we had to change it from 10.10.10.8 to 10.10.10.23.
 - **Firewall Proxmox Rule:** Since we have changed the IP address of the main laptop we had to modify the firewall rule source.
 

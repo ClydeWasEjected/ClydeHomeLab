@@ -4,6 +4,22 @@ Related: [[Homepage Design]] · [[svc-01]] · [[pfSense Configuration]]
 
 ## Current State
 
+```mermaid
+flowchart LR
+    subgraph host["svc-01: ~/homepage"]
+        yml["docker-compose.yml"]
+        cfg["config/<br/>services.yaml · settings.yaml · ..."]
+    end
+    subgraph c["container: homepage"]
+        app["/app/config"]
+    end
+    yml -- "docker compose up -d<br/>builds and starts" --> c
+    cfg <-->|"bind mount<br/>./config:/app/config"| app
+    b(["🌐 browser"]) -- "10.10.10.30:3000 → :3000" --> c
+```
+
+<sub>Edit `config/*.yaml` and refresh the browser. Edit `docker-compose.yml` and run `docker compose up -d`.</sub>
+
 | Item | Value |
 |---|---|
 | URL | `http://10.10.10.30:3000` |

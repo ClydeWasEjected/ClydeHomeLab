@@ -4,6 +4,18 @@ Related: [[Claude Server Design]] · [Homelab - Inventory](<../1 - Infrastructur
 
 ## Current State
 
+```mermaid
+flowchart LR
+    lap["💻 Laptop"] -- "ssh clyde@10.10.10.124<br/>key only" --> srv
+    subgraph srv["claude-srv · CT 105 · 10.10.10.124 · Tailscale 100.88.249.127"]
+        tm["tmux session 'claude'"] --> cc["Claude Code<br/>in ~/vault"]
+        st["Syncthing"]
+        g["git"]
+    end
+    lap <-->|"Syncthing"| st
+    g --> gh[("GitHub<br/>ClydeHomeLab")]
+```
+
 | Item | Value |
 |---|---|
 | Proxmox host / ID | `proxmox-a8`, CT 105 |
@@ -34,7 +46,8 @@ Laptop side: Syncthing v2 unpacked to `%LOCALAPPDATA%\Programs\Syncthing`, start
 | `After` / `Wants` | `network-online.target` |
 | `WantedBy` | `multi-user.target` |
 
-No `--permission-mode bypassPermissions`: remote sessions keep asking before acting.
+> [!IMPORTANT]
+> No `--permission-mode bypassPermissions`: remote sessions keep asking before acting.
 
 ### Daily use
 
