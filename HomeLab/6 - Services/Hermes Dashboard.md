@@ -87,6 +87,12 @@ echo 'dashboard@pve!feed=<secret>' > ~/.config/pve-dashboard.token && chmod 600 
 
 Check the pinned fingerprint against the Proxmox GUI (node, System, Certificates) before trusting it.
 
+### Pending
+
+- **Multi-account Gmail:** the claude.ai Gmail connector holds one Google account at a time, so Messages and the inbox briefing see only `clyde.john253`, not `clyde.jcaiga`. Plan: a self-hosted multi-account Gmail MCP server on claude-srv (preferred over third-party services like Composio, which would hold mailbox access), read-only scopes for the dashboard sync.
+- Reminders source.
+- Read-only Proxmox token for the Watchdogs tab (below).
+
 ### Operations
 
 | Task | Command |
