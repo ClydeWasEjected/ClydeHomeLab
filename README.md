@@ -12,7 +12,7 @@
 
 ## 👋 About this lab
 
-I'm Clyde, an IT Support Tech (N1/N2) at Econocom, deployed on-site at Mango's Barcelona offices. The day job gives me real enterprise ticket, AD, M365, and hardware exposure. This repo is where I build the parts the job doesn't give me: a network I own end to end, that I can **build, break, monitor, and rebuild** on purpose.
+I'm Clyde, a simple IT. Jobs gives me real enterprise ticket, AD, M365, and hardware exposure. This repo is where I build the parts the job doesn't give me: a network I own end to end, that I can **build, break, monitor, and rebuild** on purpose.
 
 The goal is a red team / SOC-analyst career transition. But this lab is deliberately not Kali-and-CTFs-first. The sequencing is intentional:
 
