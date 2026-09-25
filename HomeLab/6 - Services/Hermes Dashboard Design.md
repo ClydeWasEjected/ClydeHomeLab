@@ -57,6 +57,6 @@ Hermes is the Greek god of crossings: roads and travellers, boundary markers (he
 ## Security rules
 
 - Mail and calendar data come through a Claude call limited to two read-only tools. Email content is treated as untrusted input.
-- LAN and Tailscale only. Never port-forward `:80`, `:3000` or claude-srv `:8095`: no authentication, and the page shows job applications and script logs.
+- Tailscale only (since 2026-09-25): nginx on loopback behind `tailscale serve`, claude-srv `:8095` bound to its Tailscale IP. The page has no login of its own, so the tailnet is the boundary. Never port-forward anything: the page shows mail, job applications and script logs.
 - Read-only: nothing on the page starts, stops or changes anything.
 - No secrets in `config.json`, and scripts must not log secrets (their last 40 lines are public on the LAN).

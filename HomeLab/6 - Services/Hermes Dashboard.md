@@ -15,16 +15,16 @@ flowchart LR
         pub --> h8["http.server :8095"]
     end
     subgraph sv["svc-01 (page)"]
-        n["nginx :80 · container hermes<br/>/ = index.html · /data/ → claude-srv:8095"]
+        ts["tailscale serve :443"] --> n["nginx 127.0.0.1:80 · container hermes<br/>/ = index.html · /data/ → claude-srv:8095 (Tailscale IP)"]
     end
     h8 --> n
-    you(["💻 📱 browser<br/>LAN or Tailscale"]) --> n
+    you(["💻 📱 browser<br/>Tailscale only"]) --> ts
 ```
 
 | Item | Value |
 |---|---|
-| URL | LAN `http://10.10.10.30` · Tailscale `http://100.102.216.72` or `http://svc-01` |
-| Page | svc-01 `~/hermes/`: `docker-compose.yml` (`nginx:alpine`, container `hermes`, `80:80`), `nginx.conf`, `site/index.html` |
+| URL | `https://svc-01.tailfdea8b.ts.net` (Tailscale only, `tailscale serve` on svc-01). Not reachable from the LAN |
+| Page | svc-01 `~/hermes/`: `docker-compose.yml` (`nginx:alpine`, container `hermes`, `127.0.0.1:80:80`), `nginx.conf` (`/data/` → `100.88.249.127:8095`), `site/index.html` |
 | Page source | claude-srv `~/dashboard/site/index.html`, `~/dashboard/svc-01/` (copied to svc-01) |
 | Data | claude-srv `~/dashboard/`: `build.py`, `brief.py`, `sync_google.py`, `statusline.py`, `config.json`, output in `public/` |
 | Refresh | Page polls every 15 s, header shows **Live** / **Offline** (no data for 45 s) |
@@ -37,7 +37,7 @@ flowchart LR
 | `dashboard-build.timer` / `.service` | every minute | `build.py` → `dashboard.json`, `logs/*.txt`. `User=clyde`, `SupplementaryGroups=systemd-journal` |
 | `dashboard-brief.timer` / `.service` | every 10 min | `brief.py`: Claude writes `brief.json` (skipped when the data hash is unchanged, at least once a day) and `lesson.json` (once per new lesson) |
 | `dashboard-google.timer` / `.service` | every 30 min, 07:00 to 01:30 | `sync_google.py`: `claude -p` limited to Calendar `list_events` and Gmail `search_threads` → `calendar.json`, `mail.json` |
-| `dashboard-http.service` | always | `python3 -m http.server 8095`, read-only (`ProtectSystem=strict`, `ProtectHome=read-only`) |
+| `dashboard-http.service` | always | `python3 -m http.server 8095 --bind 100.88.249.127` (Tailscale IP only), read-only (`ProtectSystem=strict`, `ProtectHome=read-only`), `After=tailscaled.service` |
 | status line (`~/.claude/settings.json`) | on redraw | `statusline.py` → `usage.json` |
 
 ### Page layout (top to bottom)
@@ -174,3 +174,17 @@ Check the pinned fingerprint against the Proxmox GUI (node, System, Certificates
 - **Verification:** first sync 23 s: 0 events (calendar confirmed empty for 2 weeks by a direct query), 8 mail items (2 flagged for reply), 201 unread. Briefing written with 6 topics, one thing = a time-sensitive career decision.
 - **Privacy:** the page now shows email senders and one-line summaries to anyone on the LAN. Another reason never to expose `:80`.
 
+### 2026-09-25: Tailscale only, one HTTPS name (security audit H2)
+
+- **Problem:** the page, `/data/` (mail summaries, job pipeline, calendar) and claude-srv `:8095` (directory listing) were readable without auth from anything on the flat LAN, WiFi included. Also the iPhone home-screen web app only worked at home (`10.10.10.30`) or with the raw `100.x` IP.
+- **Changed (Clyde):** HTTPS certificates enabled in the tailnet. svc-01: `hermes` published on `127.0.0.1:80:80` only, `tailscale serve --bg http://127.0.0.1:80` in front (tailnet-only HTTPS). claude-srv: `http.server` bound to its Tailscale IP, `After=tailscaled.service`; nginx `/data/` and Homepage `services.yaml` point to `100.88.249.127:8095`. iPhone web app re-added from the new URL, VPN On Demand on.
+- **Issues:** `"127.0.0.1:80"` (missing container port) gave `invalid hostPort`, so compose kept the old container. `sed -i` on the single-file bind mount `nginx.conf` replaces the inode, so the running container kept the old file: `--force-recreate` needed. Laptop browser showed `DNS_PROBE_POSSIBLE` while Windows resolved the name: Secure DNS (DoH) bypasses MagicDNS, set to the current provider.
+- **Verification:** from the LAN (claude-srv `10.10.10.124`): `10.10.10.30:80` and `10.10.10.124:8095` refused. Through Tailscale: page and `/data/dashboard.json` 200 from claude-srv, iPhone (mobile data) and laptop.
+- **Open:** Homepage `:3000` still on the LAN (lab data only). No auth inside the tailnet: Tailscale ACLs in the firewall phase.
+
+### 2026-09-25: Stable errand text (ticks survive a new briefing)
+
+- **Problem:** ticks are stored per errand text, and `brief.py` rewrote the briefing 33 times in one day, rewording errands each time, so ticks vanished on reload.
+- **Changed:** `brief.py` `current_errands()` passes the last briefing's errands and one thing into the prompt; new rule: a pending item keeps its text exactly, done items are dropped, new items only for new facts. Previous errands are not in the hash (that would force a rewrite every run). Backup: `brief.py.bak-20260925`.
+- **Verification:** two forced briefings in a row: no errand reworded, only reordered; one item dropped.
+- **Open:** ticks are still per browser (phone and laptop don't sync) and Hermes can't see them: needs a small tick store on claude-srv (write endpoint, Tailscale only).
