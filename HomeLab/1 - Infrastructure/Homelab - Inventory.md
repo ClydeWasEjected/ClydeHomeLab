@@ -114,8 +114,8 @@ DHCP range on every VLAN: `.100` to `.199`.
 | Proxmox host (lab)| `10.10.10.2`, Legacy LAN, behind pfSense NAT                              |                                                                                                                                                                     | New as of 2026-09-23, see [[Proxmox Lab Setup]]                                            |
 | DC01              | **Temporary: `10.10.10.21`, Legacy LAN.** Design target is `10.10.20.21`, VLAN 20 (Servers) | `192.168.0.21` in `DC01.md`; `10.10.10.21` in an old pfSense rule (now reused, not stale); `10.10.20.21` is the intended VLAN 20 address, confirmed in `pfSense Configuration.md` and `Active Directory Lab.md` | Moved to `proxmox-lab` 2026-09-23, which has no VLAN trunk to the A8 yet, see [[Proxmox Lab Setup]] §"VLAN 20 broken by the move" |
 | WIN11-01          | **Temporary: `10.10.10.22`, Legacy LAN.** Design target is `10.10.20.22`, VLAN 20 (Servers), gateway `10.10.20.1`, DNS `10.10.20.21` | `192.168.0.22 (planned)` in `Proxmox Setup.md`                                                                                                                     | Same cause as DC01 above: moved to `proxmox-lab` before VLAN 20 trunking existed          |
-| claude-srv (CT 105 on A8) | `10.10.10.124` (DHCP, legacy LAN), no static mapping yet |                                                                                                                                                                     | New as of 2026-09-23, see [[claude-srv]]                                                  |
-| svc-01 (CT 106 on A8) | `10.10.10.30` (static, legacy LAN) |                                                                                                                                                                     | New as of 2026-09-24, replaces privileged CT 104. See [[svc-01]]                          |
+| claude-srv (CT 105 on A8) | `10.10.10.124` (DHCP, legacy LAN), no static mapping yet, Tailscale `100.88.249.127` |                                                                                                                                                                     | New as of 2026-09-23, see [[claude-srv]]                                                  |
+| svc-01 (CT 106 on A8) | `10.10.10.30` (static, legacy LAN), Tailscale `100.102.216.72` |                                                                                                                                                                     | New as of 2026-09-24, replaces privileged CT 104. See [[svc-01]]                          |
 | Ubuntu (VM 103 on A8) | Unknown, stopped | Not documented anywhere | Found 2026-09-24 in `qm list`. Purpose unknown, needs the same audit CT 104 got |
 | Main PC           | `10.10.10.23` (legacy LAN)                                                |                                                                                                                                                                    | Pending migration to Management VLAN (10)                                                 |
 | Domain name       | `ad.jnclydehl.local`, confirmed via live DNS query (2026-09-16 incident), docs updated 2026-09-18 | Historical: `jnclydehl.local` (old Overview/Design text), `jn.clydehl.local` (typo in `DC01.md` build log) | Resolved, see [[Active Directory Design]] and [[DC01]]                                   |
@@ -146,14 +146,15 @@ flowchart LR
 flowchart LR
     subgraph A8["A8 (proxmox-a8)"]
         pf["pfSense<br/>routing, firewall, DHCP, DNS fwd, VLANs"]
-        cs["claude-srv<br/>Claude Code + Syncthing"]
-        s1["svc-01<br/>Docker → Homepage :3000"]
+        cs["claude-srv<br/>Claude Code, Syncthing,<br/>Hermes emails + dashboard data"]
+        s1["svc-01<br/>Docker → Hermes :80,<br/>Hermes · Lab :3000"]
     end
     subgraph LAB["proxmox-lab"]
         dc["DC01<br/>AD DS + DNS"]
     end
-    ts{{"Tailscale<br/>A8 host · claude-srv · laptop · iPhone"}} -.-> A8
+    ts{{"Tailscale<br/>A8 host · claude-srv · svc-01 · laptop · iPhone"}} -.-> A8
     ts -.-> cs
+    ts -.-> s1
 ```
 
 |Service|Runs on|Purpose|
@@ -162,9 +163,10 @@ flowchart LR
 |Active Directory Domain Services + DNS|DC01 (VM on A8)|Domain authentication, name resolution for the domain|
 |Claude Code + Syncthing|claude-srv (CT 105 on A8)|Always-on Claude sessions; vault and Claude memory synced with the laptop. See [[Claude Server Design]]|
 |Docker|svc-01 (CT 106 on A8)|Container host for lab services. See [[svc-01]]|
-|Homepage dashboard|svc-01, `http://10.10.10.30:3000`|Links and up/down status for every lab service. See [[Homepage]]|
+|Hermes Dashboard|svc-01 `http://10.10.10.30` (page, nginx), claude-srv `~/dashboard` (data)|Main dashboard: briefing, errands, calendar, mail, job search, roadmap, lab status, lesson. See [[Hermes Dashboard]]|
+|Hermes · Lab (Homepage)|svc-01, `http://10.10.10.30:3000`|Lab-only dashboard: roadmap, hosts, automations, watchdogs, bookmarks. See [[Homepage]]|
 |Hermes report emails|claude-srv, timers 08:00 / 22:00|Morning report and evening recap by email, written by Claude from live facts. See [[Hermes]]|
-|Tailscale|A8 Proxmox host, claude-srv, laptop, iPhone|Secure remote management of Proxmox (and by extension all VMs/consoles) without exposing ports to the internet|
+|Tailscale|A8 Proxmox host, claude-srv, svc-01, laptop, iPhone|Secure remote management of Proxmox (and by extension all VMs/consoles) without exposing ports to the internet|
 
 ## 5. Known documentation debt (last reviewed 2026-09-18)
 

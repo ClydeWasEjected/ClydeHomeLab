@@ -27,10 +27,11 @@ flowchart TB
 | OS | Debian 13 (`debian-13-standard_13.6-1`) |
 | Resources | 2 cores, 2048 MB RAM, 512 MB swap, 16 GB rootfs on `local` |
 | Network | `net0` on `vmbr1`, Proxmox firewall flag on, **static** `10.10.10.30/24`, gw `10.10.10.1`, DNS `10.10.10.1` |
+| Tailscale | `100.102.216.72` (`svc-01`), `/dev/net/tun` passed through as `dev0`, `--accept-dns=false` |
 | Start on boot | Yes |
 | Docker | Docker CE 29.8.1 + Compose v5.5.1, from Docker's official Debian repo (`/etc/apt/sources.list.d/docker.sources`) |
 | Users | `root` (no password, `pct enter 106` from the A8), `adm-jnclyde` (sudo, docker) |
-| Containers | `homepage` (see [[Homepage]]) |
+| Containers | `homepage` `:3000` (see [[Homepage]]), `hermes` `:80` (see [[Hermes Dashboard]]) |
 
 ## Change Log
 
@@ -57,3 +58,12 @@ flowchart TB
 - Created admin account `adm-jnclyde` (groups `sudo`, `docker`) per the naming convention in [[AD Administration]]. Note: `docker` group membership is root-equivalent on this host.
 - Deployed Homepage, see [[Homepage]].
 - **Pending:** SSH access for `adm-jnclyde`, phone access via Tailscale.
+
+### 2026-09-25: Hermes Dashboard container
+
+- Added `nginx:alpine` container `hermes` on `:80` in `~/hermes/`. See [[Hermes Dashboard]].
+- claude-srv's key (`claude-srv@homelab`) added to `adm-jnclyde`'s `authorized_keys` so Claude can deploy dashboard changes. Note: `adm-jnclyde` is in `docker`, so that key is effectively root on svc-01.
+
+### 2026-09-25: Tailscale
+
+- Joined the tailnet as `svc-01` (`100.102.216.72`) so the dashboards work from the phone anywhere, without any public exposure. Details in [[Tailscale]].

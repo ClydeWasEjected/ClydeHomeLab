@@ -12,6 +12,26 @@ flowchart LR
 > [!NOTE] How this log works
 > One section per incident. Newest on top. Each entry: Symptom → Root cause → Fix → Verification → Follow-up. This is the narrative/investigation record: the _current_ state of any system stays in its own reference doc (e.g. [[pfSense Configuration]], [Homelab - Inventory](1%20-%20Infrastructure/Homelab%20-%20Inventory.md)); update those separately if an incident changed something permanently.
 
+## 2026-09-25: claude-srv root key back on proxmox-a8
+
+**Affected:** proxmox-a8 · [[claude-srv]] · [[Tailscale]]
+
+```mermaid
+flowchart LR
+    a["2026-09-24: claude-srv key<br/>removed from A8 root, verified"] --> b["2026-09-24 22:37:<br/>authorized_keys rewritten"] --> c["❌ 2026-09-25: claude-srv<br/>logs in as root on A8"]
+    c --> d["Claude Code permission check<br/>blocks root actions"] --> e["⏳ Clyde decides:<br/>remove or restrict"]
+    classDef bad fill:#cf222e,stroke:#cf222e,color:#fff
+    class c bad
+```
+
+- **Symptom:** while adding svc-01 to Tailscale, `ssh root@100.121.216.124 true` from claude-srv succeeded (exit 0). Line 7 of `/root/.ssh/authorized_keys` on the A8 is `claude-srv@homelab`, and lines 8 to 12 duplicate the keys above it.
+- **Root cause:** unknown. The key was added temporarily and removed on 2026-09-24 (verified `Permission denied`). The file's modification time is 2026-09-24 22:37, one minute before claude-srv's reboot; the duplicated block suggests the file was rebuilt from a copy. Not added by the Claude session of 2026-09-25.
+- **Fix:** none yet. Claude read the file (read-only) to identify the key; Claude Code's permission check then blocked root actions on the A8, and the Tailscale work was done by Clyde by hand.
+- **Verification:** pending.
+- **Follow-up:**
+  - Remove the `claude-srv@homelab` line and the duplicate block, or replace it with a restricted key (`restrict,command=...`) like the CI deploy key if claude-srv needs A8 access. _(open)_
+  - Find what rewrote `authorized_keys` at 22:37 on 2026-09-24 (shell history, `last`, the Proxmox task log). _(open)_
+
 ## 2026-09-24: DC01 renamed to WIN11-01 by mistake; client DNS still on old VLAN address
 
 **Affected:** [[DC01]] · [[WIN11-01]] · [[AD Administration]]
