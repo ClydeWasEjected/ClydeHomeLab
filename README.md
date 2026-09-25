@@ -12,9 +12,9 @@
 
 ## 👋 About this lab
 
-I'm Clyde, a simple IT. Jobs gives me real enterprise ticket, AD, M365, and hardware exposure. This repo is where I build the parts the job doesn't give me: a network I own end to end, that I can **build, break, monitor, and rebuild** on purpose.
+I'm Clyde, an IT support technician (N1/N2). My job gives me real enterprise exposure: tickets, Active Directory, M365 and hardware. This repo is where I build what the job doesn't give me: a network I own end to end, that I can **build, break, monitor, and rebuild** on purpose.
 
-The goal is a red team / SOC-analyst career transition. But this lab is deliberately not Kali-and-CTFs-first. The sequencing is intentional:
+The goal is a SOC / red team career. This lab is deliberately not Kali-and-CTFs-first. The order is intentional:
 
 ```
 IT fundamentals → Sysadmin → Windows/AD → Microsoft Cloud → Networking/Security → Offensive Security
@@ -24,51 +24,70 @@ You can't attack, or defend, a system you don't understand. So infrastructure fu
 
 ## 🗺️ Current architecture
 
-```
-                         INTERNET
-                             │
-                          Router
-                             │
-                      ┌──────▼──────┐
-                      │   pfSense   │  firewall / NAT / VLAN routing
-                      └──────┬──────┘
-                             │
-                 ┌───────────┼────────────┬────────────┐
-              VLAN 10      VLAN 20      VLAN 30       VLAN 40
-            Management     Servers      Clients       Security
-           (10.10.11.0/24)(10.10.20.0/24)(10.10.30.0/24)(10.10.40.0/24)
-                             │
-                    ┌────────┴────────┐
-                    │  Proxmox (A8)   │  always-on primary node
-                    ├─────────────────┤
-                    │ DC01     .20.21 │  AD DS + DNS
-                    │ WIN11-01 .20.22 │  domain-joined client
-                    └─────────────────┘
+```mermaid
+flowchart TB
+    net(("Internet")) --> isp["ISP router · 192.168.0.0/24"]
+    isp --> pf
 
-        Remote management: Tailscale (Proxmox host, A8)
+    subgraph a8["proxmox-a8 · always on"]
+        pf["pfSense<br/>firewall · NAT · DHCP · VLANs"]
+        cs["claude-srv<br/>ops container"]
+        s1["svc-01<br/>Docker: dashboards"]
+    end
+
+    pf --> lan["LAN 10.10.10.0/24"]
+    pf -. "defined, trunk pending" .-> vl["VLAN 10 Mgmt · 20 Servers<br/>30 Clients · 40 Security"]
+
+    subgraph lab["proxmox-lab · second node"]
+        dc["DC01<br/>AD DS + DNS"]
+        w11["WIN11-01<br/>domain client"]
+    end
+
+    lan --> lab
+    lan --> cs
+    lan --> s1
+    ts{{"Tailscale"}} -. "remote admin, no open ports" .-> a8
 ```
 
-> Second Proxmox node (i5 gaming PC) is coming online as an on-demand box for offensive-security VMs, kept deliberately separate from the always-on A8, since infra-critical services (pfSense, DC01) never live on hardware that isn't always up.
+- Domain `ad.jnclydehl.local` on Windows Server 2022, one Windows 11 client.
+- Two standalone Proxmox nodes (not clustered, on purpose: no quorum risk for the node running the firewall).
+- DC01 and WIN11-01 sit on the flat LAN until a managed switch trunks VLAN 20 to the second node. Full detail in the [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>).
 
 ## 🧰 Stack
 
 | Layer | Tooling |
 |---|---|
-| Hypervisor | Proxmox VE |
-| Firewall / Routing | pfSense |
-| Identity | Windows Server: Active Directory Domain Services, DNS, GPOs |
-| Remote access | Tailscale |
-| Automation | Bash watchdogs deployed by a GitHub Actions CI/CD pipeline (ShellCheck, Tailscale, restricted SSH key). PowerShell in progress. |
-| Planned | Entra ID, Intune, M365, Sysmon, centralized logging / SIEM |
+| Hypervisor | Proxmox VE (2 nodes), LXC + KVM |
+| Firewall / Routing | pfSense: explicit allow rules, default deny, per-VLAN DHCP |
+| Identity | Windows Server 2022: AD DS, DNS, OUs, security groups (GPOs next) |
+| Remote access | Tailscale (no router port forwards) |
+| Automation | Bash watchdogs shipped by GitHub Actions: ShellCheck, ephemeral Tailscale node, forced-command SSH key. PowerShell next. |
+| Services | Docker on an unprivileged LXC, self-hosted dashboards (Homepage + nginx), Syncthing |
+| Planned | Entra ID, Intune, M365, Sysmon, Wazuh SIEM |
+
+## 🔧 Problems solved so far
+
+Real issues from building this, each with symptom, root cause, fix and verification in the docs:
+
+| Problem | Root cause | Where |
+|---|---|---|
+| LAN had DHCP but no internet after a reboot | pfSense auto-picked the LAN gateway as default, WAN never pinned | [Incidents Log](<HomeLab/Incidents Log.md>) |
+| Phones lost internet after the LAN lockdown | Allow rule was TCP only, so DNS (UDP) was dropped | [pfSense Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>) |
+| pfSense admin password crossed the LAN in clear text | WebGUI served over HTTP; switched to HTTPS | [pfSense Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>) |
+| VLAN 20 broke when VMs moved to a second host | Tagging only ever happened inside one Proxmox bridge; no physical 802.1Q path | [Proxmox Lab Setup](<HomeLab/1 - Infrastructure/Proxmox Lab Setup.md>) |
+| Windows VM laggy after migration | `cpu: host` pinned to AMD, new node is Intel | [Proxmox Lab Setup](<HomeLab/1 - Infrastructure/Proxmox Lab Setup.md>) |
+| DC clock 9 hours ahead | Wrong time zone, time set by hand, no NTP source (breaks Kerberos) | [DC01](<HomeLab/4 - Microsoft/DC01.md>) |
+| Container escape risk | Privileged LXC with unconfined AppArmor, rebuilt unprivileged | [svc-01](<HomeLab/6 - Services/svc-01.md>) |
+| CI needed SSH into the hypervisor | Deploy key locked to one allowlisted command | [Automation Design](<HomeLab/5 - Automation/Automation Design.md>) |
 
 ## 🧭 Roadmap
 
 | Phase | Focus | Status |
 |---|---|---|
 | A | pfSense: firewall rules, NAT, logging, allow/deny | 🟡 In progress |
-| B | VLAN segmentation: Management / Servers / Clients / Security, inter-VLAN control | 🟡 Started (VLANs exist, mostly empty) |
-| C | Enterprise AD: OUs, groups, service accounts, GPOs, delegation | 🟡 In progress |
-| D | PowerShell / automation: scripted, rebuildable environments | ⬜ Pending |
+| B | VLAN segmentation: Management / Servers / Clients / Security, inter-VLAN control | 🟡 Started (VLANs exist, switch trunk pending) |
+| C | Enterprise AD: OUs, groups, service accounts, GPOs, Windows LAPS, delegation | 🟡 In progress (C1 structure done, GPOs next) |
+| D | PowerShell / automation: scripted, rebuildable environments | 🟡 Started (CI/CD for Bash watchdogs) |
 | E | Microsoft Cloud: Entra ID, hybrid identity, M365, Intune, Autopilot, Conditional Access | ⬜ Pending |
 | F | Security monitoring: Sysmon, event logging, SIEM (Wazuh), detection rules | ⬜ Pending |
 | G | Offensive security lab: attacker node, recon, AD attacks, privesc, lateral movement | ⬜ Pending |
@@ -94,7 +113,7 @@ Docs are split by service: a **Design** doc (architecture and rationale), a **bu
 
 - No `allow any` firewall rules. The point of Phase A is understanding why a rule works, not making pings succeed.
 - No jumping to Kali/exploitation before the infra it would attack actually exists.
-- No infra-critical VM (pfSense, DC01) ever lands on hardware that isn't always-on.
+- No infra-critical VM (pfSense, the service containers) ever lands on hardware that isn't always-on. The AD lab (DC01, WIN11-01) is a lab: it runs on the on-demand node.
 
 ---
 

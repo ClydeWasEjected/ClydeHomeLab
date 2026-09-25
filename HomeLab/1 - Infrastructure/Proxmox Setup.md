@@ -19,8 +19,8 @@ Base install followed [NetworkChuck's Proxmox guide](https://www.youtube.com/wat
 - **VM network:** all VMs bridged through `vmbr0` initially (pre-pfSense, flat `192.168.0.0/24`). Superseded by the pfSense/VLAN build, see [[Proxmox Administration]] and [Homelab - Inventory](<Homelab - Inventory.md>) §2 for current bridges and subnets.
 
 ## Verification
-![local storage reclaimed: 974.38 GB available after lvremove/lvresize/resize2fs](attachments/Pasted%20image%2020260531001406.png)
-![connectivity confirmed: 8.8.8.8 and google.com both responding pre-VM-deployment](attachments/Pasted%20image%2020260531001712.png)
+![local storage reclaimed: 974.38 GB available after lvremove/lvresize/resize2fs](../attachments/Pasted%20image%2020260531001406.png)
+![connectivity confirmed: 8.8.8.8 and google.com both responding pre-VM-deployment](../attachments/Pasted%20image%2020260531001712.png)
 
 ## Issues encountered
 

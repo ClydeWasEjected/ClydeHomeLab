@@ -60,7 +60,7 @@ flowchart TB
 ## 2. Network: VLANs (pfSense)
 
 > [!WARNING] Verify before trusting
-> `pfSense Configuration.md` (dated 2026-09-11) is the most recent source and is treated as authoritative below. `Network Design.md` and `pfSense Design.md` describe an earlier VLAN numbering (VLAN 20 = LAB-USERS, VLAN 30 = LAB-SERVERS) that **does not match** what's actually configured (VLAN 20 = Servers, VLAN 30 = Clients). Those two design docs need to be updated or explicitly marked "superseded."
+> `pfSense Configuration.md` (dated 2026-09-11) is the most recent source and is treated as authoritative below. `pfSense Design.md` describes an earlier VLAN numbering (VLAN 20 = LAB-USERS, VLAN 30 = LAB-SERVERS) that **does not match** what's actually configured (VLAN 20 = Servers, VLAN 30 = Clients). It carries a "superseded" banner since 2026-09-18.
 
 ```mermaid
 flowchart LR
@@ -72,17 +72,17 @@ flowchart LR
 
     classDef used fill:#2da44e,stroke:#2da44e,color:#fff
     classDef empty fill:#6e7781,stroke:#6e7781,color:#fff
-    class legacy,v20 used
-    class v10,v30,v40 empty
+    class legacy used
+    class v10,v20,v30,v40 empty
 ```
 
 <sub>🟩 has devices · ⬛ configured but empty</sub>
 
 | VLAN | Name       | Subnet          | Gateway      | Purpose                                             | Real devices on it today                           |
 | ---- | ---------- | --------------- | ------------ | --------------------------------------------------- | -------------------------------------------------- |
-| n/a  | Legacy LAN | `10.10.10.0/24` | `10.10.10.1` | Pre-VLAN flat network; AP/WiFi and untagged devices | Main PC (`10.10.10.8`), AP/WiFi, being phased out |
+| n/a  | Legacy LAN | `10.10.10.0/24` | `10.10.10.1` | Pre-VLAN flat network; AP/WiFi and untagged devices | Main PC (`10.10.10.23`), claude-srv, svc-01, proxmox-lab, **DC01 and WIN11-01 (temporary)**, AP/WiFi |
 | 10   | Management | `10.10.11.0/24` | `10.10.11.1` | Admin PC, future PiKVM                              | Empty: Main PC not yet migrated here              |
-| 20   | Servers    | `10.10.20.0/24` | `10.10.20.1` | DC01, WIN11-01                                      | **DC01, WIN11-01**, the only populated VLAN       |
+| 20   | Servers    | `10.10.20.0/24` | `10.10.20.1` | DC01, WIN11-01                                      | Empty until the VLAN 20 trunk exists (DC01/WIN11-01 temporarily on Legacy LAN, see §3) |
 | 30   | Clients    | `10.10.30.0/24` | `10.10.30.1` | Mobile/WiFi devices                                 | Empty                                              |
 | 40   | Security   | `10.10.40.0/24` | `10.10.40.1` | Future Vaio, Kali                                   | Empty                                              |
 
@@ -160,7 +160,7 @@ flowchart LR
 |Service|Runs on|Purpose|
 |---|---|---|
 |pfSense|VM on A8 (Proxmox)|Router/firewall, DHCP, DNS forwarding, VLAN segmentation|
-|Active Directory Domain Services + DNS|DC01 (VM on A8)|Domain authentication, name resolution for the domain|
+|Active Directory Domain Services + DNS|DC01 (VM 100 on proxmox-lab)|Domain authentication, name resolution for the domain|
 |Claude Code + Syncthing|claude-srv (CT 105 on A8)|Always-on Claude sessions; vault and Claude memory synced with the laptop. See [[Claude Server Design]]|
 |Docker|svc-01 (CT 106 on A8)|Container host for lab services. See [[svc-01]]|
 |Hermes Dashboard|svc-01 `http://10.10.10.30` (page, nginx), claude-srv `~/dashboard` (data)|Main dashboard: briefing, errands, calendar, mail, job search, roadmap, lab status, lesson. See [[Hermes Dashboard]]|
@@ -168,7 +168,7 @@ flowchart LR
 |Hermes report emails|claude-srv, timers 08:00 / 22:00|Morning report and evening recap by email, written by Claude from live facts. See [[Hermes]]|
 |Tailscale|A8 Proxmox host, claude-srv, svc-01, laptop, iPhone|Secure remote management of Proxmox (and by extension all VMs/consoles) without exposing ports to the internet|
 
-## 5. Known documentation debt (last reviewed 2026-09-18)
+## 5. Known documentation debt (last reviewed 2026-09-25)
 
 - [x] **Domain name reconciled: `ad.jnclydehl.local` is canonical**, confirmed via a direct DNS query against DC01 during the 2026-09-16 incident (SOA record returned). `DC01.md`'s build-log typo (`jn.clydehl.local`) was a transcription error, not the real forest name. Corrected in `DC01.md` and `Active Directory Design.md` (2026-09-18).
 - [x] **NetBIOS name confirmed `JNCLYDEHL`** via `Get-ADDomain` on DC01 (2026-09-24). The earlier `AD\Administrator` suspicion was wrong; `DC01.md` and `Active Directory Design.md` updated.
@@ -177,11 +177,11 @@ flowchart LR
 - [x] `pfSense Design.md`: was marked done previously but the stale VLAN table was still there with no flag. Actually fixed now (2026-09-18): added a "superseded" banner pointing here.
 - [x] Fill in the incomplete section in `WIN11-01.md` (placeholder line never completed)
 - [x] Empty index files with no content (`HomeLab.md`, `1 - Infrastructure.md`, etc.) removed. Note: this left dangling `[[1 - Infrastructure]]`-style wikilinks in `Homelab - Project Overview.md` pointing at now-deleted files; fixed 2026-09-18.
-- [ ] `HomeLab/Plan.md`, `Roles.md`, `Roles 2.md`: deleted from the vault already (confirmed gone in git status); no longer an open item.
+- [x] `HomeLab/Plan.md`, `Roles.md`, `Roles 2.md`: deleted from the vault already (confirmed gone in git status); no longer an open item.
 - [x] **Security note:** re-checked 2026-09-18. No plaintext passwords or personal email found in current `DC01.md` or any tracked doc. The old file that had them (`Homelab Overview.md`) no longer exists. Closing this, but keep the habit of not typing real credentials into notes going forward.
-- [ ] **New: DC01's own preferred DNS is set to the gateway (`10.10.20.1`), not to itself.** Contradicts the DNS rule stated in `Active Directory Design.md` ("DC01 does not use the VLAN gateway as DNS"). This is a real AD anti-pattern, not just a doc issue: verify and fix on the live box. See `DC01.md` Current State. Note: while DC01 is on the temporary `10.10.10.x` addressing (see below), it's pointed at itself (`10.10.10.21`), so re-check this once it's back on VLAN 20.
+- [x] **Closed 2026-09-24 (confirmed OK by Clyde on the live box): DC01's own preferred DNS is set to the gateway (`10.10.20.1`), not to itself.** Contradicts the DNS rule stated in `Active Directory Design.md` ("DC01 does not use the VLAN gateway as DNS"). This is a real AD anti-pattern, not just a doc issue: verify and fix on the live box. See `DC01.md` Current State. Note: while DC01 is on the temporary `10.10.10.x` addressing (see below), it's pointed at itself (`10.10.10.21`), so re-check this once it's back on VLAN 20.
 - [ ] **New: WAN GUI access on pfSense was temporarily opened during initial setup** (`pfSsh.php playback enableallowallwan`) and no later doc confirms it was closed again. `pfSense Configuration.md` has no WAN rule table at all. Check `System > Advanced` and `Firewall > Rules > WAN` on the live box. See `pfSense Network Configuration.md`.
-- [ ] **New: broken embed.** `AD Administration.md` references a screenshot (`aduc-ou-tree-2026-09-16.png`) that was never actually saved to attachments.
+- [x] ~~Broken embed `aduc-ou-tree-2026-09-16.png` in `AD Administration.md`~~. Closed 2026-09-25: that OU tree was lost and rebuilt 2026-09-24, so the callout was dropped.
 - [x] ~~Remove/disable the stale pfSense rule pointing at `10.10.10.21` for DC01~~. **Superseded 2026-09-23:** this rule is now load-bearing, not stale. DC01 was moved to `proxmox-lab` before that node had a VLAN 20 trunk, and is temporarily readdressed to `10.10.10.21` on the Legacy LAN. Do not remove this rule until VLAN 20 trunking is restored (see [[Proxmox Lab Setup]]).
 - [x] **Fixed 2026-09-24: DC01 clock was 9 hours ahead.** Time zone set to `Romance Standard Time`, NTP source `pool.ntp.org` via `w32tm`; RootDSE `currentTime` now matches `claude-srv` to the second. RootDSE `currentTime` read `2026-09-25 01:41Z` when real UTC was `2026-09-24 16:42Z`. Pattern fits a Pacific time zone with Barcelona wall-clock time set by hand. DC01 is the domain time source, so every domain member inherits it: log timestamps are wrong, and any non-domain client (Linux, sssd, Kerberos from `claude-srv`) is outside the 5-minute Kerberos window. Fix time zone and give DC01 a real external NTP source.
 - [ ] **New (2026-09-24): DC01 and WIN11-01 are evaluation builds** (Server 2022 Standard Evaluation, Win11 Enterprise Evaluation). An expired eval Server shuts down every hour. **DC01:** expires ~2026-11-27 (64 days left on 2026-09-24), 6 rearms left, each `slmgr /rearm` + reboot resets to 180 days: rearm around mid-November, not earlier (rearming early wastes the remaining days). **WIN11-01:** expires ~2026-12-09 (76 days left on 2026-09-24), only 2 rearms left: plan a rebuild (or a scripted re-provision) rather than relying on rearms.

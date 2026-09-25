@@ -1,6 +1,6 @@
 # pfSense Configuration
 
-# Current State (as of 2026-09-11)
+# Current State (as of 2026-09-25)
 
 ## IP Allocation Scheme (Legacy LAN, 10.10.10.0/24)
 | Range | Purpose |
@@ -38,9 +38,9 @@ flowchart LR
 DHCP range on every VLAN: `.100–.199`.
 
 > [!NOTE] VLAN status
-> Only **Servers (20)** has real devices on it (DC01 
-> confirmed working). Management, Clients, and Security exist in pfSense 
-> but are empty: see Known Pending Items.
+> All four VLANs are currently empty. DC01 and WIN11-01 were on Servers (20) 
+> from 2026-09-11 until the move to `proxmox-lab` on 2026-09-23, and sit on the 
+> Legacy LAN until that node gets a VLAN 20 trunk: see [[Proxmox Lab Setup]].
 
 ![DC01 confirmed correct IP/gateway on Servers VLAN](attachments/Pasted%20image%2020260910164013.png)
 ![DC01 network details after VLAN migration](attachments/Pasted%20image%2020260910164024.png)
@@ -68,8 +68,8 @@ flowchart TB
 | # | Protocol | Source | Destination | Port | Action | Description |
 |---|---|---|---|---|---|---|
 | n/a | * | * | LAN Address | 443, 80 | Pass | Anti-Lockout Rule (default). Follows the WebGUI port: 443 for HTTPS, 80 for the redirect |
-| 1 | any | LAN net | 10.10.10.21 | any | Pass | ⚠️ Stale: DC01 moved to `10.10.20.21` |
-| 2 | TCP | 10.10.10.8 (main PC) | 192.168.0.20 | 8006 | Pass | Allow main PC → Proxmox WebUI |
+| 1 | any | LAN net | 10.10.10.21 | any | Pass | DC01. Load-bearing again: DC01 is temporarily back on `10.10.10.21` (see [[Proxmox Lab Setup]]) |
+| 2 | TCP | 10.10.10.23 (main PC) | 192.168.0.20 | 8006 | Pass | Allow main PC → Proxmox WebUI. ⚠️ See pending items |
 | 3 | any | LAN net | !LAN net | any | Pass | Allow LAN → Internet |
 | n/a | IPv4 | LAN subnets | any | any | Disabled | Legacy allow-any (kept as fallback) |
 | n/a | IPv6 | LAN subnets | any | any | Disabled | Unused |
@@ -103,7 +103,10 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 ### Known Pending Items
 
 > [!WARNING] Known Pending Items
-> - **DC01 rule (#1) is stale**: still points to `10.10.10.21`
+> - **DC01 rule (#1)** points to `10.10.10.21`: correct while DC01 is on the Legacy LAN, revisit once VLAN 20 is trunked
+> - **Rule 2 may not be doing anything**: on 2026-09-25 `claude-srv` (`10.10.10.124`, not the main PC) opened `192.168.0.20:8006` fine. Work out which rule actually passed that traffic and whether rule 2 is needed
+> - **NTP** fails to sync on every boot (see 2026-09-16)
+> - **WAN GUI**: opened with `enableallowallwan` during install, never confirmed closed (see [[pfSense Network Configuration]])
 > - **Proxmox WebUI** sits outside pfSense entirely (`192.168.0.20:8006`, 
 >   on the ISP router's network)
 > - **AP/WiFi still on legacy flat LAN, untagged**: blocked on a managed 
@@ -123,11 +126,6 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 - Disabled (not deleted) the default allow-any rule
 - **Issue**: mobile lost internet: rule 3 was TCP-only, blocking DNS 
   (UDP). Fixed by setting protocol to `any`.
-
-> [!WARNING] Broken link found
-> Original doc referenced an alias creation 
-> screenshot (`Pasted image 20260909151624.png`) that doesn't exist in 
-> the attachments folder. Either re-add it or remove the reference.
 
 ### 2026-09-10: DHCP range conflict
 - Attempted static mapping at `.50`, rejected: DHCP pool covered the 
@@ -164,11 +162,8 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 - **Issue (repeat)**: rules set to TCP only initially: same mistake as 
   the LAN lockdown. Fixed to `any`.
 
-> [!WARNING] Broken links found
-> Original doc referenced "Rule 2" and 
-> "Rule 3" firewall testing screenshots (`Pasted image 20260910032240.png` 
-> and `20260910032308.png`) that don't exist in attachments. Same issue 
-> as the alias screenshot above.
+![Rule 2 test: main PC to Proxmox WebUI](attachments/Pasted%20image%2020260910032240.png)
+![Rule 3 test: LAN to internet](attachments/Pasted%20image%2020260910032308.png)
 
 - Migrated DC01's DHCP static mapping: LAN → SERVERS, 
   `10.10.10.21` → `10.10.20.21`
@@ -199,3 +194,9 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 - **Why it matters:** over HTTP the admin password crossed the LAN in clear text, readable by anyone capturing traffic.
 - **Fix:** `System > Advanced > Admin Access` > Protocol: HTTPS (SSL/TLS), default self-signed certificate.
 - **Verification:** `https://10.10.10.1` returns HTTP/2 200, `http://10.10.10.1` returns 301 to HTTPS, dashboard `siteMonitor` green. No firewall rule was added: the anti-lockout rule followed the port change on its own.
+
+### 2026-09-25: Doc audit against live state
+- Rule table: rule 2 source updated to `10.10.10.23` (the live change was already logged on 2026-09-16, the table wasn't). Rule 1 relabelled load-bearing.
+- VLAN status note updated: no VLAN has devices since the 2026-09-23 migration.
+- Three screenshots flagged as missing were in `attachments/` all along. Rule 2/3 test screenshots embedded, alias warning dropped.
+- **Verification:** TCP checks from `claude-srv`: `10.10.10.1:443` open, `192.168.0.20:8006` open (this last one led to the rule 2 question above).

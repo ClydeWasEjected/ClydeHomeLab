@@ -8,11 +8,11 @@ Related: [[Hermes Design]] · [[claude-srv]]
 |---|---|
 | Host | `claude-srv` (CT 105), user `clyde` |
 | Location | `~/hermes-mail/` |
-| From / To | `hermes.studentboard@gmail.com` → `clyde.jcaiga@gmail.com` |
+| From / To | Hermes sender account → personal inbox (addresses in `send-report.py` on claude-srv, kept out of the public repo) |
 | Schedule | `hermes-morning.timer` 08:00, `hermes-evening.timer` 22:00 (Europe/Madrid) |
 | Service | `hermes@.service` (template: `hermes@morning`, `hermes@evening`), `TimeoutStartSec=900` |
 | Secret | `~/hermes-mail/.env` (`chmod 600`) → `EMAIL_PASSWORD=` (App Password of the Hermes bot account, for sending) |
-| Inbox source (morning) | `.env` → `GMAIL_USER=clyde.john253@gmail.com`, `GMAIL_IMAP_PASSWORD=` (App Password of that account). IMAP, `readonly`, headers only |
+| Inbox source (morning) | `.env` → `GMAIL_USER=<main Gmail>`, `GMAIL_IMAP_PASSWORD=` (App Password of that account). IMAP, `readonly`, headers only |
 | Calendar source (morning) | `.env` → `GCAL_ICS_URL=` (Google Calendar → Settings → calendar → "Secret address in iCal format") |
 
 ### Files
@@ -69,3 +69,20 @@ Related: [[Hermes Design]] · [[claude-srv]]
 - **Verification:** calendar parser tested on a sample feed (TZID, UTC, all-day, weekly `BYDAY` with `EXDATE`, expired `UNTIL`): correct Madrid times. Wrong IMAP login returns "unavailable", report continues. Renderer test: cards shown, HTML escaped, `lessons_sent.json` unchanged. Full `--dry-run` without credentials: `inbox`/`calendar` empty and cards hidden; test history file removed afterwards.
 - **Open:** add `GMAIL_USER`, `GMAIL_IMAP_PASSWORD` and `GCAL_ICS_URL` to `.env` (typed on the server, not pasted in chat), then run `--dry-run` once to see real data.
 
+
+### 2026-09-25: Weekly security report attachment
+- **Changed:** `send-report.py` attaches the newest `~/hermes-mail/security/security-report-*.html` to the **Monday morning** email only; the subject gets "weekly security report (date)". `--with-security` forces it on other days. Backup: `send-report.py.bak-20260925c`.
+- **Why:** a weekly security view without a separate email. The reports are **deliberately not in this repo**: the repo is public and a security report maps attack paths. `security/` is mode 700.
+- **Verification:** `py_compile` OK; the first report (2026-09-25) was sent through the same `send()` path with the attachment; Gmail SMTP accepted it (arrival to be confirmed by Clyde).
+- **Open:** nothing regenerates the report yet, so Mondays re-send the newest one (its date is in the subject). An automated weekly check script is a pending learning task.
+
+### 2026-09-25: Light and dark mode
+- **Problem:** the first luxury-theme send (08:01) arrived light on Gmail iOS. Gmail iOS fully inverts HTML mail in dark mode and ignores `color-scheme`, so the black palette flipped to cream.
+- **Changed:** `send-report.py` now has `LIGHT` and `DARK` palettes. Inline styles use the champagne/gold light palette (Gmail inverts it to a dark look by itself). `dark_css()` adds a `prefers-color-scheme: dark` block for Apple Mail and Outlook that maps every inline light colour (background, text, borders) to its black/champagne/gold equivalent through attribute selectors, so the markup needs no classes. Meta `color-scheme` is now `light dark`. Urgent card colours moved into the palette. Backup: `send-report.py.bak-20260925d`.
+- **Verification:** `py_compile` OK; `preview.html` rendered with the light palette plus the dark override block; `lessons_sent.json` unchanged. One test email ("[TEST light/dark]") sent to the personal inbox; appearance on Gmail iOS light and dark to be confirmed by Clyde.
+
+### 2026-09-25: Black and gold in the Gmail app
+- **Changed:** `send-report.py` `lock_backgrounds()` repeats every background as a one-colour gradient in its dark twin (base `#000000`, cards `#0d0b08`). Text keeps the light palette. Backup: `send-report.py.bak-20260925d`.
+- **Why:** the Gmail app's dark mode rewrites email colours, which turned the design brown-grey. It leaves background images alone, and it turns the light palette's dark text into ivory and gold.
+- **Verification:** five test emails on the iPhone Gmail app (A to E); "D" chosen by Clyde. The full report preview was sent the same day.
+- **Open:** check one email on the laptop. A client that doesn't auto-darken may show dark text on black; the fallback is test "E" (real colours inline, Gmail-only colour flip).

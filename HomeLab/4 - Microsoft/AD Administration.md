@@ -29,9 +29,6 @@ flowchart TB
 
 <sub>Every department gets the same three sub-OUs: Users, Computers, Groups.</sub>
 
-> [!todo] Screenshot pending
-> Referenced screenshot `aduc-ou-tree-2026-09-16.png` was never actually saved to the attachments folder: add it or drop this callout.
-
 ### Security Groups
 
 ```mermaid

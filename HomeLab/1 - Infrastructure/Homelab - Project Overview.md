@@ -48,8 +48,8 @@ flowchart LR
 | Phase | Focus                                                                                                  | Status                                                                                                                     |
 | ----- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | A     | pfSense: firewall rules, NAT, logging, allow/deny                                                     | 🟡 In progress                                                                                                             |
-| B     | VLAN segmentation: Management / Servers / Clients / Security zones, inter-VLAN control                | 🟡 Started (VLANs exist in pfSense; only Servers has real devices, see [Homelab - Inventory](Homelab%20-%20Inventory.md)) |
-| C     | Enterprise AD: departmental OUs, groups, service accounts, GPOs, Windows LAPS, delegation             | 🟡 In progress (C1 started, see [[AD Administration]])                                                    |
+| B     | VLAN segmentation: Management / Servers / Clients / Security zones, inter-VLAN control                | 🟡 Started (VLANs exist in pfSense, all empty until the VLAN 20 trunk to `proxmox-lab` exists, see [Homelab - Inventory](Homelab%20-%20Inventory.md)) |
+| C     | Enterprise AD: departmental OUs, groups, service accounts, GPOs, Windows LAPS, delegation             | 🟡 In progress (C1 done 2026-09-24, C4 GPOs next, see [[AD Administration]])                                  |
 | D     | PowerShell / automation: scripted user/OU/group/VM creation, rebuildable environments                 | ⬜ Pending                                                                                                                  |
 | E     | Microsoft cloud: Entra ID, hybrid identity, M365, Intune, Autopilot, Conditional Access               | ⬜ Pending                                                                                                                  |
 | F     | Security monitoring: Sysmon, Windows event logging, SIEM (Wazuh), detection rules                     | ⬜ Pending                                                                                                                  |
@@ -57,7 +57,7 @@ flowchart LR
 | H     | Red team scenario + professional pentest report                                                        | ⬜ Pending                                                                                                                  |
 
 > [!NOTE] Current position
-> Transitioning from Phase A into Phase B/C: pfSense rules are mostly locked down, VLANs exist but are only partially populated, AD has its OU/group foundation.
+> Phases A, B and C run in parallel: pfSense rules are mostly locked down (NTP and WAN GUI still open), VLANs exist but wait on a switch trunk, AD has its OU/group/user foundation (C1) and GPOs (C4) are next. Services (claude-srv, svc-01, Hermes) were added alongside.
 
 ## 4. Hardware roles (why each machine exists)
 
@@ -69,7 +69,7 @@ flowchart TB
         a8["🖥️ A8<br/>the 'corporate network'"]
     end
     subgraph ondemand["On demand"]
-        gp["🎮 Gaming PC<br/>offensive-security VMs"]
+        gp["🎮 Gaming PC<br/>AD lab: DC01, WIN11-01"]
     end
     subgraph planned["Planned"]
         va["Vaio<br/>lightweight services"]
@@ -82,8 +82,11 @@ flowchart TB
     class va plan
 ```
 
-- **A8**: primary infrastructure node. Runs Proxmox bare metal, hosts pfSense, DC01, and WIN11-01. This is the "corporate network" side of the lab.
-- **Gaming PC**: secondary Proxmox node, reserved for on-demand offensive-security VMs (Kali, vulnerable machines). Kept separate from A8 so infra-critical services (pfSense, DC01) never depend on a machine that dual-boots and isn't always on.
+- **A8**: primary infrastructure node. Runs Proxmox bare metal, hosts pfSense and the service containers (claude-srv, svc-01). This is the "corporate network" side of the lab.
+- **Gaming PC** (`proxmox-lab`): secondary Proxmox node, planned for on-demand offensive-security VMs. Since 2026-09-23 it also hosts DC01 and WIN11-01 (see [[Proxmox Lab Setup]]; the reason for the move is not recorded yet).
+
+> [!NOTE] DC01 is a lab VM, not infra-critical
+> Nothing outside the lab depends on the domain, so DC01 and WIN11-01 can live on an on-demand node. Infra-critical means pfSense and the service containers (claude-srv, svc-01): those stay on the always-on A8. Decided 2026-09-25.
 - **Ryzen 5 PRO mini PC**: not available (2026-09-24). Workloads once planned for it need another home.
 - **Vaio (planned)**: future lightweight-services node (Pi-hole, Home Assistant, Docker), explicitly kept as a "migrate an old machine into the lab" exercise.
 
@@ -105,7 +108,7 @@ flowchart LR
 
 ## 6. Known open items
 
-- [ ] Several docs still reference the pre-VLAN legacy IP scheme (`10.10.10.x` / `192.168.0.x`) and need a pass to confirm/update against current state tracked in [Homelab - Inventory](Homelab%20-%20Inventory.md).
+- [x] Legacy IP references audited 2026-09-25. Note that `10.10.10.x` is current again for DC01/WIN11-01 until VLAN 20 is trunked; [Homelab - Inventory](Homelab%20-%20Inventory.md) is the reference.
 - [x] ~~Domain name written inconsistently across docs~~: resolved 2026-09-18, canonical form is `ad.jnclydehl.local` (see [Homelab - Inventory](Homelab%20-%20Inventory.md) §3). NetBIOS `JNCLYDEHL` confirmed live 2026-09-24.
 - [ ] Proxmox management UI (`192.168.0.20`) still sits outside pfSense, on the ISP router's network, not yet migrated behind the firewall.
 - [ ] No inter-VLAN firewall rules exist yet (default-deny between segments, which is correct for now, but Phase B isn't complete until deliberate inter-VLAN rules are added).
