@@ -44,14 +44,14 @@ Laptop side: Syncthing v2 unpacked to `%LOCALAPPDATA%\Programs\Syncthing`, start
 | Setting | Value |
 |---|---|
 | Unit type | user unit, `Type=forking` |
-| `ExecStart` | `tmux -L rc new-session -d -s rc -c ~/vault ~/.local/bin/claude rc` |
+| `ExecStart` | `tmux -L rc new-session -d -s rc -n rc -c ~/vault` running `claude rc` in a `while true` restart loop (window `rc`) |
 | `ExecStop` | `tmux -L rc kill-server` |
 | `WorkingDirectory` | `~/vault` (new sessions open here) |
 | `Restart` / `RestartSec` | `always` / `10` |
 | `After` / `Wants` | `network-online.target` |
 | `WantedBy` | `default.target` |
 
-Dedicated socket `rc`: when `claude rc` exits, the tmux server exits, systemd sees the main process die and restarts it.
+Dedicated socket `rc`. `claude rc` restarts itself inside window `rc` (5 s loop): resumed sessions in other windows of the same tmux server keep it alive, so systemd alone cannot see `claude rc` die.
 
 ```bash
 systemctl --user status claude-rc
@@ -104,3 +104,9 @@ cd ~/vault && claude
 - Runs the data side of the Hermes Dashboard (four units above) and the Claude Code status line hook.
 - Found the `claude-srv@homelab` key back in the A8's root `authorized_keys`, although it was removed on 2026-09-24. Logged in [[Incidents Log]], decision pending.
 
+### 2026-09-25: Remote Control server died unnoticed
+
+- **Symptom:** Remote Control sessions offline in the app; `systemctl --user status claude-rc` still "active".
+- **Cause:** the `claude rc` process had exited and its tmux window closed, but resumed sessions (`claude --resume … --remote-control`) had been opened as extra windows on the same `rc` tmux server. The server stayed up, so systemd (which tracks the tmux server) never restarted anything.
+- **Fix:** started `claude rc` again in a new window `rc` inside a `while true` restart loop, without restarting the service (that would have killed the live sessions). Unit changed to the same loop for future boots (backup `claude-rc.service.bak-20260925`), `daemon-reload` only.
+- **Verification:** `claude rc` running (pid 19726), pane shows `Connected · ClydeHomeLab`, capacity 2/32.
