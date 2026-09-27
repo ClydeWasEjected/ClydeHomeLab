@@ -30,7 +30,7 @@ flowchart LR
 | Software | Claude Code (native installer, `~/.local/bin/claude`), Syncthing v2 (`apt.syncthing.net`, `stable-v2`), Tailscale, git, tmux |
 | Syncthing | `syncthing@clyde` systemd service, GUI on `127.0.0.1:8384` only |
 | Hermes emails | `hermes-morning.timer` 08:00, `hermes-evening.timer` 22:00 (`~/hermes-mail`). See [[Hermes]] |
-| Hermes Dashboard data | `~/dashboard`: `dashboard-build` (1 min), `dashboard-brief` (10 min), `dashboard-google` (30 min, 07:00 to 01:30), `dashboard-http` on `:8095`. Feeds both dashboards on svc-01. See [[Hermes Dashboard]] |
+| Hermes Dashboard data | `~/dashboard`: `dashboard-build` (1 min), `dashboard-brief` (10 min), `dashboard-google` (30 min, 07:00 to 01:30), `dashboard-http` (`serve.py`, Host-checked) on `:8095`. Feeds both dashboards on svc-01. See [[Hermes Dashboard]] |
 | Status line | `~/.claude/settings.json` `statusLine` → `~/dashboard/statusline.py` (shows 5-hour and weekly usage, saves it for the dashboard) |
 | Remote Control | `claude-rc.service` user unit (see below) |
 | Git | `~/vault`, remote `git@github.com:ClydeWasEjected/ClydeHomeLab.git`, key `~/.ssh/id_ed25519` (`claude-srv@homelab`), `core.autocrlf=input` |

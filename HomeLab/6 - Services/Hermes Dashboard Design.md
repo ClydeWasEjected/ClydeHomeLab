@@ -31,7 +31,7 @@ flowchart LR
 | Caching | `Cache-Control: no-cache` on the page, `no-store` on data | The phone kept an old Homepage `custom.css`. A dashboard must never show a stale version. |
 | Host checks | TCP connect from claude-srv, sequential | No raw sockets in an unprivileged CT, so no ping. Sequential because parallel threads added ~35 ms of noise to every reading. |
 | Hand-edited data | `~/dashboard/config.json` (services, quick links, cert states) | Things only Clyde knows. One small file instead of editing code. |
-| Task ticks | Browser `localStorage`, keyed by the report date | Read-only design: the page never writes back to the server. Ticks are per browser and reset with each new morning report. |
+| Task ticks | Server-side on claude-srv (`ticks.py`), keyed by a hash of the task text, `localStorage` as offline copy | One truth for phone and laptop. Allowed once the page became Tailscale-only (2026-09-25); before that the page was strictly read-only because anyone on the LAN could reach it. |
 | Layout | 3 columns (Today · Briefing · Lab), 2 below 1280 px, 1 below 860 px | Inspired by Glance and Notion "second brain" homelab setups: one purpose per card, most important first on the phone. |
 | Roadmap | Stepper of gold diamonds on a line, current phase highlighted, click for the note | One line instead of 8 rows. ◆ is the Hermes mark. |
 
@@ -58,5 +58,6 @@ Hermes is the Greek god of crossings: roads and travellers, boundary markers (he
 
 - Mail and calendar data come through a Claude call limited to two read-only tools. Email content is treated as untrusted input.
 - Tailscale only (since 2026-09-25): nginx on loopback behind `tailscale serve`, claude-srv `:8095` bound to its Tailscale IP. The page has no login of its own, so the tailnet is the boundary. Never port-forward anything: the page shows mail, job applications and script logs.
-- Read-only: nothing on the page starts, stops or changes anything.
+- The data and tick servers check the Host header (DNS rebinding: a website open on a tailnet device must not be able to read them), serve only data files with no directory listing, and are sandboxed by systemd. Add a new access name in `HOSTS`, see [[Hermes Dashboard]].
+- Read-only except ticks: the page's only write is `POST /api/ticks` (a key and a boolean, own origin, JSON only). Nothing on the page starts, stops or changes a system.
 - No secrets in `config.json`, and scripts must not log secrets (their last 40 lines are public on the LAN).

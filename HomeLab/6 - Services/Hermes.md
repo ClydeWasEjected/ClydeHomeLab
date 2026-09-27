@@ -86,3 +86,15 @@ Related: [[Hermes Design]] · [[claude-srv]]
 - **Why:** the Gmail app's dark mode rewrites email colours, which turned the design brown-grey. It leaves background images alone, and it turns the light palette's dark text into ivory and gold.
 - **Verification:** five test emails on the iPhone Gmail app (A to E); "D" chosen by Clyde. The full report preview was sent the same day.
 - **Open:** check one email on the laptop. A client that doesn't auto-darken may show dark text on black; the fallback is test "E" (real colours inline, Gmail-only colour flip).
+
+### 2026-09-26: Detailed lesson of the day
+- **Changed:** every entry in `lessons.json` gained `from_book` (a story from the book, only where it's a known example, otherwise empty), `in_practice` (the idea applied to Clyde's week), `apply` (two concrete steps) and `question`. `send-report.py` shows them in the morning **and** evening emails (the excerpt and key points were morning-only before), and in the plain-text version. Backups: `lessons.json.bak-20260926`, `send-report.py.bak-20260926`.
+- **Why:** Clyde asked for more depth. The detail is written once into the file, so sending costs no extra Claude call (the 2026-09-25 evening run had already failed on a usage limit).
+- **Verification:** rendered with two lessons (with and without a story); a preview of last night's recap was sent.
+- **Also 2026-09-25:** the evening run failed at 22:00 on a Claude usage limit (reset 22:30). It was re-run by hand at 23:59 and sent. Open: add a retry (systemd `Restart=on-failure` with a delay, or wait for the reset time), a pending task for Clyde.
+
+### 2026-09-26: Mailer verifies Gmail's certificate
+- **Found (audit):** Python's default TLS context for `smtplib.starttls()` and `imaplib.IMAP4_SSL` does not verify certificates, so the app password was sent to whoever answered on the LAN path to Gmail.
+- **Changed:** `send-report.py`, `hermes-run.py` and `gf/send-gf.py` pass `ssl.create_default_context()`. Backups `*.bak-20260926-tls`. Rule for new mail code: always pass a verifying context.
+- **Verification:** verified handshake to `smtp.gmail.com:587` and `imap.gmail.com:993` (no login in the test), the same context refuses a wrong hostname, and a real report email was sent through the fixed code.
+
