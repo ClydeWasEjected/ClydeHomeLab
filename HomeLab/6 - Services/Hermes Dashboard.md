@@ -361,3 +361,7 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 - **Rule:** a day counts with a vault commit, a homelab session log, a playbook step ticked or noted, or a weekly audit run (`build.py` `lab_days()`). Errand ticks do not count. Nothing is backdated: each day is backed by a real record.
 - **Display:** the streak tile shows what kept today ("kept today: audit, commits, playbook, session").
 - **Result:** the streak read 1 after the missed commit day and reads 6 with the new rule (best 6).
+
+### 2026-09-27: Reminder for uncommitted vault changes
+- **What:** the evening recap and the dashboard briefing get the number of uncommitted vault paths (`hermes-run.py` `uncommitted()`, `brief.py` `vault_uncommitted`). When it is above zero they add one short line: say "commit". Nothing when it is zero. The stray workflow file is ignored in the count.
+- **Why:** Claude commits its own finished work in small local commits; edits made in Obsidian between sessions are never committed automatically (the repository is public and nobody would review them), so a reminder keeps the streak and the record honest.
