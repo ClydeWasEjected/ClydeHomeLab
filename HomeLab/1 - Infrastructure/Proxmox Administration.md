@@ -9,10 +9,10 @@ flowchart TB
         nic0["nic0<br/>physical NIC"] --> vmbr1["vmbr1 · Lab LAN<br/>10.10.10.0/24"]
         vmbr0 --> pf["pfSense VM"]
         vmbr1 --> pf
-        vmbr1 --> vms["VMs / CTs<br/>(tap interfaces)"]
+        vmbr1 --> vms["VMs / CTs<br/>(tap / fwpr interfaces)"]
     end
     subgraph wd["Watchdogs (systemd timers, every 60s)"]
-        w1["fix-orphan-taps<br/>re-attaches taps with no bridge"]
+        w1["fix-orphan-taps<br/>re-attaches taps / fwpr ports with no bridge"]
         w2["fix-down-interfaces<br/>brings watched interfaces back up"]
     end
     w1 -. "watches" .-> vms
@@ -24,7 +24,7 @@ flowchart TB
 
 | Watchdog | Catches | Fix it applies | Log |
 |---|---|---|---|
-| fix-orphan-taps | a `tapXXXiY` with no `master` bridge | `ip link set <tap> master <bridge>` | `/var/log/bridge-tap-watchdog.log` |
+| fix-orphan-taps | a `tapXXXiY` or `fwprXXXpY` with no `master` bridge | `ip link set <port> master <bridge>` | `/var/log/bridge-tap-watchdog.log` |
 | fix-down-interfaces | a watched interface that is admin-down | `ip link set <iface> up` | `/var/log/iface-down-watchdog.log` |
 
 **Watchdog: fix-orphan-taps**
@@ -33,8 +33,8 @@ flowchart TB
 - Systemd units: `/etc/systemd/system/fix-orphan-taps.service`, `/etc/systemd/system/fix-orphan-taps.timer`
 - Timer: `OnBootSec=10`, `OnUnitActiveSec=60`
 - Log: `/var/log/bridge-tap-watchdog.log`
-- Function: detects `tapXXXiY` interfaces with no `master` (bridge) assigned and automatically reattaches them to the correct bridge, looking up the expected bridge via `qm config <vmid>` on the matching `netN` line
-- Status: active, `enabled` (survives reboot), verified live end to end 2026-09-18 (see Change Log)
+- Function: detects `tapXXXiY` (VM NIC) and `fwprXXXpY` (firewall link of an LXC, or of a VM with `firewall=1`) interfaces with no `master` and reattaches them. Expected bridge comes from the matching `netN` line of `pct config` (if `/etc/pve/lxc/<id>.conf` exists) or `qm config`. A tap of a VM with `firewall=1` goes to `fwbrXXXiY` instead of the vmbr.
+- Status: active, `enabled` (survives reboot), fwpr handling verified live 2026-09-25 (see Change Log)
 
 **Watchdog: fix-down-interfaces**
 - Script (tracked in repo): [[fix-down-interfaces.sh]] (`HomeLab/5 - Automation/scripts/fix-down-interfaces.sh`)
@@ -142,3 +142,13 @@ Automation now has its own folder, `HomeLab/5 - Automation/scripts/`, instead of
 ### 2026-09-22: Pipeline live, first deploy verified
 
 Secrets, Tailscale policy and OAuth client set up; CI and Deploy both green on the first push. Both watchdog scripts on this host are byte-identical to the repo (SHA-256 match) and were written by the pipeline. Watchdogs unaffected: both timers active, no orphaned taps. Detail and evidence in [[Automation Administration]].
+
+### 2026-09-25: Networking reload orphaned LXC fwpr ports
+
+**Symptom:** claude-srv (CT 105) and svc-01 (CT 106) dropped off Tailscale and LAN around 18:16. From inside CT 105, `ping 10.10.10.1` gave `Destination Host Unreachable`. The host itself still reached pfSense.
+
+**Root cause:** `networking.service` restarted at 18:16. The reload rebuilt `vmbr1` with only `nic0`, detaching the containers' firewall links `fwpr105p0` / `fwpr106p0`. fix-orphan-taps re-attached `tap102i1` (pfSense) but only matched `tapXXXiY`, so the containers stayed cut off for about 45 minutes.
+
+**Fix:** manual `ip link set fwpr10{5,6}p0 master vmbr1`, then extended [[fix-orphan-taps.sh]] to also match `fwprXXXpY`, read LXC bridges from `pct config`, and send a firewalled VM's tap to `fwbrXXXiY`. Deployed by hand to `/usr/local/bin/` (old version kept as `fix-orphan-taps.sh.bak-20260925`).
+
+**Verification:** `ip link set fwpr106p0 nomaster`, ran the watchdog: `fwpr106p0 no tiene master` / `vmbr1` / `bridge linked`, log line `2026-09-25 19:06:40 - fixed fwpr106p0 -> vmbr1`, CT 106 pings 10.10.10.1 again. Repo and host SHA-256 match (`f707c7d6...b0f9db`).

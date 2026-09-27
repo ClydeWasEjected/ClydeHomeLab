@@ -31,15 +31,15 @@ flowchart LR
 
 <sub>Git runs only on the server (one writer). Secrets never sync: each host has its own.</sub>
 
-| Decision | Choice | Why |
-|---|---|---|
-| Host | LXC container on the A8 | A8 is the always-on node. `proxmox-lab` is dual-boot and not always on. |
-| Guest type | Unprivileged LXC, not a VM | A8 has only 2 cores. Claude Code is a single CLI process and does not need a full kernel. |
-| Network | `vmbr1` (LAN side of pfSense) | Keeps it behind the firewall. `vmbr0` is the ISP side. Moves to the Servers or Management VLAN once VLANs are live. |
-| Remote access | Tailscale + OpenSSH (key only), Claude inside `tmux` | Reachable from anywhere without port forwards. `tmux` keeps the session alive across disconnects. |
-| File sync | Syncthing, laptop to server, LAN only | Continuous and automatic. Git-as-sync depends on remembering commit/push/pull on two machines. |
-| Version control | Git runs only on `claude-srv` | One writer means no git state conflicts. Syncthing ignores `.git` on both sides. |
-| Secrets | Never synced | Claude login, SSH keys and Tailscale identity are created per host, so one can be revoked without touching the other. |
+| Decision        | Choice                                               | Why                                                                                                                   |
+| --------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Host            | LXC container on the A8                              | A8 is the always-on node. `proxmox-lab` is dual-boot and not always on.                                               |
+| Guest type      | Unprivileged LXC, not a VM                           | A8 has only 2 cores. Claude Code is a single CLI process and does not need a full kernel.                             |
+| Network         | `vmbr1` (LAN side of pfSense)                        | Keeps it behind the firewall. `vmbr0` is the ISP side. Moves to the Servers or Management VLAN once VLANs are live.   |
+| Remote access   | Tailscale + OpenSSH (key only), Claude inside `tmux` | Reachable from anywhere without port forwards. `tmux` keeps the session alive across disconnects.                     |
+| File sync       | Syncthing, laptop to server, LAN only                | Continuous and automatic. Git-as-sync depends on remembering commit/push/pull on two machines.                        |
+| Version control | Git runs only on `claude-srv`                        | One writer means no git state conflicts. Syncthing ignores `.git` on both sides.                                      |
+| Secrets         | Never synced                                         | Claude login, SSH keys and Tailscale identity are created per host, so one can be revoked without touching the other. |
 
 ### What syncs
 
