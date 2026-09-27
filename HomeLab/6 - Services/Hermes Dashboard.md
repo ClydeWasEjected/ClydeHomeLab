@@ -355,3 +355,9 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 - **What:** `config.json` `weekly_reminders` (weekday 0 = Monday) adds a reminder to the dashboard's reminders every Monday: tell Claude "apply the Monday audit" (about 15 minutes). The date is part of the text, so ticking it applies to that week only. The Monday email's Security lines carry the same reminder.
 - **Why:** the scheduled check only drafts; the register changes after Claude verifies the evidence with Clyde.
 - **Verification:** simulated Monday shows the item with the date; on other days the list stays empty.
+
+### 2026-09-27: Streak counts lab days, not only commits
+- **Why:** a day of real lab work without a commit broke the streak, which measures the habit (daily lab work), not the git log.
+- **Rule:** a day counts with a vault commit, a homelab session log, a playbook step ticked or noted, or a weekly audit run (`build.py` `lab_days()`). Errand ticks do not count. Nothing is backdated: each day is backed by a real record.
+- **Display:** the streak tile shows what kept today ("kept today: audit, commits, playbook, session").
+- **Result:** the streak read 1 after the missed commit day and reads 6 with the new rule (best 6).
