@@ -28,10 +28,9 @@ flowchart LR
 
 - **Symptom:** no Sunday evening recap in the inbox, and no "HERMES · run failed" alert either, past the 22:00 send window.
 - **Root cause:** `hermes@evening.service` ran on time but hit `socket.gaierror` (`EAI_AGAIN`) resolving `api.anthropic.com`, so the Claude call failed. The failure-notification path (`send-report.py --error`) then hit the same transient DNS window trying to resolve `smtp.gmail.com`, so the alert email failed too. Checked by hand afterward: DNS from `claude-srv` (via `10.10.10.1`) resolved both hostnames fine within the hour, so this reads as a short transient blip, not a standing resolver problem.
-- **Fix:** `send-report.py`'s `send()` retries the SMTP connection up to 3 times (10s apart) on DNS/connection errors, and on total failure appends to `~/hermes-mail/send-failures.log` before re-raising, so a repeat stays discoverable locally even if no email can go out at all. See [[Hermes]] change log, 2026-09-27.
-- **Verification:** retry path exercised with a mocked SMTP client (recovers after 2 simulated failures; on permanent failure, still raises and logs). No real repeat blip has occurred yet to confirm end-to-end.
-- **Follow-up:**
-  - `ask_claude()`'s call to the Claude CLI itself still has no retry for plain connectivity failures (only a separate reschedule path for usage-limit errors). Leave as-is unless this recurs. _(open, low priority)_
+- **Fix:** `send-report.py`'s `send()` retries the SMTP connection up to 3 times (10s apart) on DNS/connection errors, and on total failure appends to `~/hermes-mail/send-failures.log` before re-raising, so a repeat stays discoverable locally even if no email can go out at all. `hermes-run.py`'s `ask_claude()` call gained the matching gap fix: a new `is_network_error()` check reschedules the whole run once, 5 minutes later, via the same `systemd-run` mechanism the existing usage-limit retry uses, instead of failing straight to an error email. See [[Hermes]] change log, 2026-09-27.
+- **Verification:** SMTP retry exercised with a mocked client (recovers after 2 simulated failures; on permanent failure, still raises and logs). `is_network_error()` matches the actual Sunday error string and does not overlap with `is_usage_limit()`. Sunday's missed recap was sent by hand once DNS was confirmed working; the automatic reschedule path has not yet fired for a real blip.
+- **Follow-up:** none open.
 
 ## 2026-09-25: claude-srv root key back on proxmox-a8
 
