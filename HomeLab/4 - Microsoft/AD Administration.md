@@ -101,6 +101,35 @@ Servers that only get administered (e.g. `svc-01`) carry the admin account only.
 > [!info] Why this structure
 > Departments chosen (IT / Security / Operations) instead of a generic business template map to real permission narratives relevant to a security career path. See [[Active Directory Design]] for full rationale.
 
+### Group Policy
+
+Five GPOs, enforced against domain accounts and against [[WIN11-01]] depending on OU placement.
+
+| GPO | Linked to | Settings | Why | Verified with |
+|---|---|---|---|---|
+| Default Domain Policy | Domain root (`DC=ad,DC=jnclydehl,DC=local`) | Password: min length 14, history 24, max age 365 days, min age 1 day, complexity on. Lockout: threshold 5, duration 15 min, observation window 15 min | Account policy for domain accounts is only read from the GPO linked at the domain root | `Get-ADDefaultDomainPasswordPolicy` on DC01, lockout test against `jordi.serra` (LockedOut True), `Unlock-ADAccount` to clear |
+| GPO-Workstation-Baseline | Departments | Firewall on for Domain, Private and Public profiles (inbound blocked by default), screen lock timeout 600 seconds, SMBv1 disabled (Preference registry item) | A single link on a parent OU reaches every child OU beneath it | `gpresult` applied GPO list on WIN11-01, `Get-NetFirewallProfile`, screen lock timeout value, `EnableSMB1Protocol` False |
+| GPO-Local-Admins | Departments | SG_IT_Admins added to the local Administrators group (Preference) | People are placed in groups, groups are placed on resources, nobody is named directly; Preferences are additive | `net localgroup Administrators` on WIN11-01 (SG_IT_Admins listed), elevated prompt succeeded for `adm.clyde`, failed for `marc.puig` |
+| GPO-Operations-Restrictions | Operations/Users | Control Panel and Settings blocked | User-side settings follow the user object; scope is enforced by the OU the user account lives in | `gpresult` and interactive test as `jordi.serra` (GPO listed, Settings blocked) versus `laura.vidal` (GPO absent, Settings opens normally) |
+| GPO-Security-PSLogging | Security/Computers | PowerShell script block logging enabled | Computer-side scope follows the computer object, so moving it between OUs changes what applies | Negative test with WIN11-01 in Operations (GPO absent), positive test after moving it into Security/Computers (GPO listed, `EnableScriptBlockLogging` = 1, event ID 4104 captured), negative test again after moving it back (registry key removed) |
+
+**Domain password and lockout policy, before and after**
+
+| Setting | Before (AD DS default) | After |
+|---|---|---|
+| Minimum password length | 7 | 14 |
+| Password history count | 24 | 24 (unchanged) |
+| Maximum password age | 42 days | 365 days |
+| Minimum password age | 1 day | 1 day (unchanged) |
+| Complexity enabled | True | True (unchanged) |
+| Lockout threshold | 0 (no lockout) | 5 invalid attempts |
+| Lockout duration | 30 minutes | 15 minutes |
+| Lockout observation window | 30 minutes | 15 minutes |
+
+![[s0c-1.png]]
+
+All five GPOs are backed up (one folder per GPO) to `C:\GPOBackup` on DC01, then copied off DC01.
+
 ---
 
 ## Change Log
@@ -147,4 +176,27 @@ Servers that only get administered (e.g. `svc-01`) carry the admin account only.
 **Changed:** `adm-<handle>` / `svc-<app>` / `<handle>` replaced by `adm.<first>` / `svc.<app>[-<scope>]` / `<first>.<last>`.
 **Why:** accounts were created in AD with dots; Clyde prefers that pattern over the hyphen one, so the doc follows the directory.
 **Open:** `adm-jnclyde` on `svc-01` still uses the old pattern (see Outlier note above).
+
+---
+
+### 2026-09-28: C4, Group Policy baseline
+**Changed:** Tightened Default Domain Policy at the domain root (password and lockout settings). Added four scoped GPOs: GPO-Workstation-Baseline and GPO-Local-Admins linked to Departments (parent-OU inheritance reaches every child), GPO-Operations-Restrictions linked to Operations/Users (user-object scope), GPO-Security-PSLogging linked to Security/Computers (computer-object scope).
+
+**Why:** turn the OU design into an enforced baseline, and demonstrate for each GPO why it is linked where it is: account policy only at the root, inheritance from a parent OU, user scope versus computer scope, groups placed on resources instead of named accounts.
+
+**Verification lab:**
+- [x] Each GPO tested from both sides on [[WIN11-01]]: applies where expected, does not apply where it should not (GPO-Operations-Restrictions against `jordi.serra` vs `laura.vidal`; GPO-Security-PSLogging with WIN11-01 moved into Security/Computers then back to Operations/Computers)
+- [x] `Get-GPInheritance` on the Operations OU: GPO-Workstation-Baseline, GPO-Local-Admins and Default Domain Policy inherited
+- [x] `gpresult /h` HTML report on WIN11-01
+- [x] Cross-checked over LDAP as `svc.claude-ro` (read-only): all 5 GPO objects exist under `CN=Policies,CN=System`, and `gPLink` on each target OU (Departments, Operations/Users, Security/Computers, domain root) points at exactly the GUID the table above lists. WIN11-01's current `distinguishedName` confirmed back in `OU=Computers,OU=Operations,OU=Departments` (post negative-retest state)
+- [ ] Domain password policy itself not re-verified over LDAP for this entry: already proved directly with `Get-ADDefaultDomainPasswordPolicy` (before screenshot: `s0c-1.png`, see the table above)
+
+**Issues:**
+- `gpresult /r /scope computer` returned Access Denied from a non-elevated PowerShell session; computer-scope RSOP data needs an elevated session. Fixed by reopening PowerShell as Administrator.
+- `Get-WinEvent -LogName ... -FilterHashtable @{Id=4104}` failed twice: a copy-paste line split, then `AmbiguousParameterSet` because `-LogName` and `-FilterHashtable` are separate, mutually exclusive parameter sets. Fixed by putting `LogName` as a key inside the hashtable, one line.
+- `gpresult /h` report would not render in Edge (raw tags, or an open/save loop through Internet Explorer): the file had been saved with a typo'd extension (`.hmlt`), which has no browser association.
+
+**Not evidenced / open:**
+- The pasted `gpresult` Applied GPOs screenshot only shows the top of the list (the two built-in default GPOs); it does not visibly include the four custom GPOs. Worth a rescreenshot scrolled further down if this table needs a second image.
+- Snapshot of the finished VM state (Proxmox) and the handoff note for the next session were not part of this write-up; those are separate from the documentation itself.
 
