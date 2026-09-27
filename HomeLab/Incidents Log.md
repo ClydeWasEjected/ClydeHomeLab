@@ -12,6 +12,27 @@ flowchart LR
 > [!NOTE] How this log works
 > One section per incident. Newest on top. Each entry: Symptom → Root cause → Fix → Verification → Follow-up. This is the narrative/investigation record: the _current_ state of any system stays in its own reference doc (e.g. [[pfSense Configuration]], [Homelab - Inventory](1%20-%20Infrastructure/Homelab%20-%20Inventory.md)); update those separately if an incident changed something permanently.
 
+## 2026-09-27: Hermes evening recap silently lost, both the report and its own failure alert hit the same DNS blip
+
+**Affected:** [[claude-srv]] · [[Hermes]]
+
+```mermaid
+flowchart LR
+    a["22:00 CEST: hermes-evening.timer<br/>fires on schedule"] --> b["ask_claude(): DNS lookup<br/>for api.anthropic.com fails"]
+    b --> c["main() catches it,<br/>calls send-report.py --error"]
+    c --> d["❌ same DNS blip: smtp.gmail.com<br/>also fails to resolve"]
+    d --> e["No recap, no alert email.<br/>Fully silent failure"]
+    classDef bad fill:#cf222e,stroke:#cf222e,color:#fff
+    class b,d,e bad
+```
+
+- **Symptom:** no Sunday evening recap in the inbox, and no "HERMES · run failed" alert either, past the 22:00 send window.
+- **Root cause:** `hermes@evening.service` ran on time but hit `socket.gaierror` (`EAI_AGAIN`) resolving `api.anthropic.com`, so the Claude call failed. The failure-notification path (`send-report.py --error`) then hit the same transient DNS window trying to resolve `smtp.gmail.com`, so the alert email failed too. Checked by hand afterward: DNS from `claude-srv` (via `10.10.10.1`) resolved both hostnames fine within the hour, so this reads as a short transient blip, not a standing resolver problem.
+- **Fix:** `send-report.py`'s `send()` retries the SMTP connection up to 3 times (10s apart) on DNS/connection errors, and on total failure appends to `~/hermes-mail/send-failures.log` before re-raising, so a repeat stays discoverable locally even if no email can go out at all. See [[Hermes]] change log, 2026-09-27.
+- **Verification:** retry path exercised with a mocked SMTP client (recovers after 2 simulated failures; on permanent failure, still raises and logs). No real repeat blip has occurred yet to confirm end-to-end.
+- **Follow-up:**
+  - `ask_claude()`'s call to the Claude CLI itself still has no retry for plain connectivity failures (only a separate reschedule path for usage-limit errors). Leave as-is unless this recurs. _(open, low priority)_
+
 ## 2026-09-25: claude-srv root key back on proxmox-a8
 
 **Affected:** proxmox-a8 · [[claude-srv]] · [[Tailscale]]

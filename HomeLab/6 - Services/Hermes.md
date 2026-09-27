@@ -93,6 +93,14 @@ Related: [[Hermes Design]] · [[claude-srv]]
 - **Verification:** rendered with two lessons (with and without a story); a preview of last night's recap was sent.
 - **Also 2026-09-25:** the evening run failed at 22:00 on a Claude usage limit (reset 22:30). It was re-run by hand at 23:59 and sent. Open: add a retry (systemd `Restart=on-failure` with a delay, or wait for the reset time), a pending task for Clyde.
 
+### 2026-09-27: Evening recap lost to a DNS blip; SMTP send now retries
+
+- **Symptom:** the Sunday evening recap never arrived. No failure email either, so it was a silent miss.
+- **Root cause:** `hermes@evening.service` fired on time (22:00 CEST) but `ask_claude()` failed with `socket.gaierror`/`EAI_AGAIN` (couldn't resolve `api.anthropic.com`). `main()` correctly fell back to `send-report.py --error`, but that call hit the *same* transient DNS window and failed resolving `smtp.gmail.com`, so the failure notification also silently died. DNS on `claude-srv` (via `10.10.10.1`) resolved normally seconds later when checked by hand; treated as a one-off blip, not a persistent resolver problem (nothing else in the lab shows DNS issues around that time).
+- **Fix:** `send-report.py`'s `send()` now retries the SMTP connection up to 3 times (10s apart) on `socket.gaierror` / `OSError` / `smtplib.SMTPException`, covering both normal report sends and `--error` notifications. If all retries still fail, it appends the failure to `~/hermes-mail/send-failures.log` before re-raising, so a total outage stays discoverable on the host even with no email at all.
+- **Verification:** `py_compile` OK. Retry path exercised with a mocked SMTP client: recovers after 2 simulated `gaierror`s and sends on the 3rd attempt; with SMTP always failing, raises as before (still surfaces via `journalctl -u hermes@<mode>`) and writes the fallback log line. Not yet exercised against a real live DNS blip (none occurred since the fix).
+- **Follow-up:** none open. If failures recur even with the retry, next step would be `ask_claude()`'s Claude-CLI call itself, which has no retry (only the separate usage-limit reschedule path).
+
 ### 2026-09-26: Mailer verifies Gmail's certificate
 - **Found (audit):** Python's default TLS context for `smtplib.starttls()` and `imaplib.IMAP4_SSL` does not verify certificates, so the app password was sent to whoever answered on the LAN path to Gmail.
 - **Changed:** `send-report.py`, `hermes-run.py` and `gf/send-gf.py` pass `ssl.create_default_context()`. Backups `*.bak-20260926-tls`. Rule for new mail code: always pass a verifying context.
