@@ -1,6 +1,6 @@
 # Single Sign-On (Entra and Okta)
 
-Related: [[Active Directory Design]] · [[AD Administration]]
+Related: [[Active Directory Design]] · [[AD Administration]] · [[Entra ID]]
 
 SSO round trips through two identity providers: Microsoft Entra ID (SAML and OIDC) and a free Okta Integrator org (OIDC), plus MFA enforced on the Okta side. Playbook module E2.
 
