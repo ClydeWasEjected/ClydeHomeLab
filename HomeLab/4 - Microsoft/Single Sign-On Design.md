@@ -30,6 +30,6 @@ flowchart LR
 |---|---|---|
 | Where apps live | Enterprise applications (SAML) and App registrations (OIDC), two places | Applications > Create App Integration, protocol picked in the wizard |
 | Access control | Conditional Access (CA001) scoped to a group | Authentication policy attached per app, rules scoped to a group |
-| SAML flow | SP-initiated needs a Sign on URL, IdP-initiated via My Apps | Not built, module moved to OIDC (see Change Log) |
+| SAML flow | SP-initiated needs a Sign on URL, IdP-initiated via My Apps | Not built, module moved to OIDC (see the Change Log in [[Single Sign-On]]) |
 | OIDC flow | Client-initiated via hand-built authorize URL, token decoded at jwt.ms | Client-initiated via oidcdebugger.com, default response type is `code`, `id_token` must be chosen |
 | Failure diagnosis | On-screen error pages, sign-in logs not used | System Log gives the exact policy or enrollment reason |
