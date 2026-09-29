@@ -1,6 +1,6 @@
 # Single Sign-On (Entra and Okta)
 
-Related: [[Active Directory Design]] · [[AD Administration]] · [[Entra ID]]
+Related: [[Single Sign-On Design]] · [[Active Directory Design]] · [[AD Administration]] · [[Entra ID]]
 
 SSO round trips through two identity providers: Microsoft Entra ID (SAML and OIDC) and a free Okta Integrator org (OIDC), plus MFA enforced on the Okta side. Playbook module E2.
 
@@ -48,16 +48,6 @@ SSO round trips through two identity providers: Microsoft Entra ID (SAML and OID
 ![[e2-okta-oidc-idtoken.png]]
 
 <sub>Okta debugger run with `response_type=id_token`: authorization server responded with tokens, state matched.</sub>
-
-**Entra vs Okta, same kind of task**
-
-| Topic | Entra | Okta |
-|---|---|---|
-| Where apps live | Enterprise applications (SAML) and App registrations (OIDC), two places | Applications > Create App Integration, protocol picked in the wizard |
-| Access control | Conditional Access (CA001) scoped to a group | Authentication policy attached per app, rules scoped to a group |
-| SAML flow | SP-initiated needs a Sign on URL, IdP-initiated via My Apps | Not built, module moved to OIDC (see Change Log) |
-| OIDC flow | Client-initiated via hand-built authorize URL, token decoded at jwt.ms | Client-initiated via oidcdebugger.com, default response type is `code`, `id_token` must be chosen |
-| Failure diagnosis | On-screen error pages, sign-in logs not used | System Log gives the exact policy or enrollment reason |
 
 **Open items**
 - The Okta admin account uses an institutional email that may be deactivated after graduation. Move it to a permanent address, add a second super admin and a second MFA factor.
