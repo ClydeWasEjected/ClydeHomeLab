@@ -57,6 +57,7 @@ flowchart LR
 | The road (7/12) | Phase stepper, all 8 phases with bar and note, cert path | Latest Hermes morning report `phases`, `config.json` `certs` |
 | Sentinels (6/12) | Tabs: Hosts (TCP check + latency), Scripts (tap for log summary), Watchdogs | `config.json` services, systemd `UNITS`, Proxmox API journal |
 | Wins (6/12) | Highlights (48 h), day-by-day commits (5 days), 26-week heatmap | `brief.json` `wins`, `build.py` `daily`, `heatmap` |
+| Side projects (12/12) | One line per side project: name and status. Off the road, so no phase and no roadmap doc | `build.py` `side_projects()`: notes in `~/.claude/global-memory/Projects/` with `side: true` |
 | Wisdom (12/12) | Quote, excerpt, key ideas, For you today; the idea, story, why, 3 actions, watch out; reflection question | `lessons.json` via `build.py`, `lesson.json` |
 
 Ticks (errands, the one thing) are keyed by a hash of the task text and stored on claude-srv (`ticks.py`), so every device shows the same ones. The browser keeps an offline copy and queues ticks made while offline. Ticks older than 30 days are forgotten. Phone: one column in the same order.
@@ -365,3 +366,8 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 ### 2026-09-27: Reminder for uncommitted vault changes
 - **What:** the evening recap and the dashboard briefing get the number of uncommitted vault paths (`hermes-run.py` `uncommitted()`, `brief.py` `vault_uncommitted`). When it is above zero they add one short line: say "commit". Nothing when it is zero. The stray workflow file is ignored in the count.
 - **Why:** Claude commits its own finished work in small local commits; edits made in Obsidian between sessions are never committed automatically (the repository is public and nobody would review them), so a reminder keeps the streak and the record honest.
+
+### 2026-09-30: Side projects card and first side reminder
+- **What:** new **Side projects** card below Wins (`index.html` `side()`, `build.py` `side_projects()`). It lists global-memory `Projects/` notes marked `side: true` with their `status:` line. First entry: Ebook Server (self-hosted ebook server on svc-01, kept off the roadmap). `public/reminders.json` now exists with one errand for it (check svc-01 RAM and disk, due 2026-10-05).
+- **Why:** the page only knew roadmap phases and job search, so an idea outside the road had no place and would be forgotten.
+- **Verification:** `dashboard.json` `side` and `reminders` correct; svc-01 serves the page with the card and the data feed returns the entry (checked over loopback on svc-01). Not yet checked visually on the phone. Backups: `build.py.bak-20260930-side`, `site/index.html.bak-20260930-side`.
