@@ -144,3 +144,10 @@ The Hermes panel moved out of Homepage on 2026-09-25 and is now its own dashboar
 ### 2026-09-25: Reachable over Tailscale
 
 - svc-01 joined the tailnet. `HOMEPAGE_ALLOWED_HOSTS` extended with `100.102.216.72:3000` and `svc-01:3000` (backup `docker-compose.yml.bak-20260925`), `docker compose up -d`. Closes the "phone access" pending item from 2026-09-24. Verified 200 over the tailnet.
+
+### 2026-10-01: Services unreachable over Tailscale (pending)
+
+- Clyde reports the services shown in Homepage and the dashboard cannot be reached over Tailscale. Homepage itself answers 200 on `http://100.102.216.72:3000` from claude-srv.
+- **Cause found:** no tailnet node advertises `10.10.10.0/24` (no PrimaryRoutes on any peer). Cards and links to `10.10.10.x` (Proxmox, pfSense, DC01) only work on the LAN. Cards on `100.x` addresses (Hermes, `:8095`) are not affected.
+- **Pending (Clyde):** subnet router on svc-01: enable IPv4/IPv6 forwarding (`/etc/sysctl.d/`), `tailscale up --advertise-routes=10.10.10.0/24`, approve the route in the Tailscale admin console, enable "Use Tailscale subnets" on the phone, check pfSense does not block svc-01 to the LAN. Verify `https://10.10.10.1` from the phone off the LAN.
+- **Pending (needs the exact symptom from Clyde):** URL and device that fail, in case the cause is `HOMEPAGE_ALLOWED_HOSTS` or the Hermes HTTPS serve instead.
