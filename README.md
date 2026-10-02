@@ -108,6 +108,7 @@ Docs are split by service: a **Design** doc (architecture and rationale), a **bu
 | ⚙️ Automation | [Design](<HomeLab/5 - Automation/Automation Design.md>) · [Administration](<HomeLab/5 - Automation/Automation Administration.md>) |
 | 🧩 Services | [Claude Server Design](<HomeLab/6 - Services/Claude Server Design.md>) · [claude-srv](<HomeLab/6 - Services/claude-srv.md>) · [svc-01](<HomeLab/6 - Services/svc-01.md>) · [Homepage Design](<HomeLab/6 - Services/Homepage Design.md>) · [Homepage](<HomeLab/6 - Services/Homepage.md>) · [Hermes Design](<HomeLab/6 - Services/Hermes Design.md>) · [Hermes](<HomeLab/6 - Services/Hermes.md>) · [Hermes Dashboard Design](<HomeLab/6 - Services/Hermes Dashboard Design.md>) · [Hermes Dashboard](<HomeLab/6 - Services/Hermes Dashboard.md>) |
 | 📋 Ops | [Incidents Log](<HomeLab/Incidents Log.md>) · [Security Process](<HomeLab/Security Process.md>) · [Incident Response](<HomeLab/Incident Response.md>) |
+| 🤖 AI Butler (side project) | [Design](<HomeLab/7 - AI Butler/AI Butler Design.md>) |
 
 ## 🚫 Deliberate non-goals (for now)
 
