@@ -55,21 +55,19 @@ Side integrations:
 | TTS | TBD | likely CPU-fine, host undecided |
 | Home Assistant | TBD (Vaio? svc-01?) | not yet running in the lab |
 
-### Known blocker: GPU host is not always-on
+### GPU host always-on status
 
-The 1650 lives on **proxmox-lab**, the dual-boot gaming PC. Per this vault's own rule,
-infra-critical services never run on non-always-on hardware
-([[Homelab - Project Overview]], README non-goals) — and proxmox-lab is exactly that
-kind of host. A "day-to-day" butler needs to always listen, but STT/judge depend on
-hardware that goes down whenever Clyde boots into Windows to game.
+The 1650 lives on **proxmox-lab**, which is a dual-boot gaming PC in principle —
+this vault's own rule normally keeps infra-critical services off hardware like that
+([[Homelab - Project Overview]], README non-goals). As of 2026-10-03, Clyde isn't
+booting it into Windows, so it's functioning as always-on in practice. Treating
+proxmox-lab as the butler's GPU host on that basis.
 
-Options, not yet decided:
-- Degrade gracefully: router skips the local judge and goes Claude-only when
-  proxmox-lab is unreachable.
-- Run Whisper on A8 CPU instead of GPU (slower, always available); only use the 1650
-  for Ollama when proxmox-lab happens to be up.
-- Get dedicated always-on GPU hardware later (not a near-term purchase, just a flagged
-  future blocker).
+Caveat: this is a current-state call, not a hardware guarantee. If Windows/gaming use
+resumes, the butler's STT/judge capability goes down with it. Worth building the
+degrade-gracefully fallback (router skips the local judge and goes Claude-only when
+proxmox-lab is unreachable) regardless, as cheap insurance rather than a blocking
+requirement.
 
 ### Resource sizing notes
 
@@ -85,3 +83,6 @@ Options, not yet decided:
 - 2026-10-03: Design doc created. Vision, architecture, build order, hardware
   allocation, and the proxmox-lab always-on conflict captured from planning
   conversation with Clyde. Nothing built yet; this is the plan to build from.
+- 2026-10-03: Clyde confirmed proxmox-lab isn't currently used for Windows/gaming,
+  so it's treated as always-on for the butler's GPU host. Noted as a current-state
+  call, not a permanent guarantee; degrade-gracefully fallback still recommended.
