@@ -53,25 +53,25 @@ pfSense checks rules **top to bottom, first match wins**. Anything that matches 
 flowchart TB
     p(["Packet arrives on LAN"]) --> al{"To LAN address,<br/>GUI port?"}
     al -- "yes" --> A1["✅ Anti-Lockout"]
-    al -- "no" --> r1{"Rule 1: to 10.10.10.21?"}
+    al -- "no" --> r1{"Rule 1: iPhone to<br/>192.168.0.20:8006?"}
     r1 -- "yes" --> A2["✅ pass"]
-    r1 -- "no" --> r2{"Rule 2: main PC to<br/>192.168.0.20:8006?"}
+    r1 -- "no" --> r2{"Rule 2: to 10.10.10.21?"}
     r2 -- "yes" --> A3["✅ pass"]
-    r2 -- "no" --> r3{"Rule 3: to anything<br/>outside LAN net?"}
-    r3 -- "yes" --> A4["✅ pass (internet)"]
-    r3 -- "no" --> D["❌ default deny (silent drop)"]
+    r2 -- "no" --> r3{"Rule 3: main PC to<br/>192.168.0.20:8006?"}
+    r3 -- "yes" --> A4["✅ pass"]
+    r3 -- "no" --> r4{"Rule 4: any to any?"}
+    r4 -- "yes" --> A5["✅ pass (internet and everything else)"]
     classDef ok fill:#2da44e,stroke:#2da44e,color:#fff
-    classDef bad fill:#cf222e,stroke:#cf222e,color:#fff
-    class A1,A2,A3,A4 ok
-    class D bad
+    class A1,A2,A3,A4,A5 ok
 ```
 | # | Protocol | Source | Destination | Port | Action | Description |
 |---|---|---|---|---|---|---|
 | n/a | * | * | LAN Address | 443, 80 | Pass | Anti-Lockout Rule (default). Follows the WebGUI port: 443 for HTTPS, 80 for the redirect |
-| 1 | any | LAN net | 10.10.10.21 | any | Pass | DC01. Load-bearing again: DC01 is temporarily back on `10.10.10.21` (see [[Proxmox Lab Setup]]) |
-| 2 | TCP | 10.10.10.23 (main PC) | 192.168.0.20 | 8006 | Pass | Allow main PC → Proxmox WebUI. ⚠️ See pending items |
-| 3 | any | LAN net | !LAN net | any | Pass | Allow LAN → Internet |
-| n/a | IPv4 | LAN subnets | any | any | Disabled | Legacy allow-any (kept as fallback) |
+| 1 | TCP | 10.10.10.108 (iPhone, static mapping) | 192.168.0.20 | 8006 | Pass | Clyde's iPhone → Proxmox WebUI |
+| 2 | TCP | * | 10.10.10.21 | any | Pass | DC01. Load-bearing for when DC01 moves to VLAN 20 (see [[Proxmox Lab Setup]]); 0 B today because same-subnet traffic never crosses pfSense |
+| 3 | TCP | 10.10.10.23 (main PC) | 192.168.0.20 | 8006 | Pass | Allow main PC → Proxmox WebUI |
+| 4 | IPv4 any | * | * | any | Pass | "Allow LAN to Internet". Live destination is `*` (any), not `!LAN net`: it makes rules 1 to 3 redundant. To be narrowed after VLAN migration |
+| n/a | IPv4 | LAN subnets | any | any | Disabled | Default allow LAN to any (kept as fallback) |
 | n/a | IPv6 | LAN subnets | any | any | Disabled | Unused |
 
 ![Final LAN rules 1-3 configured](attachments/Pasted%20image%2020260910031956.png)
@@ -103,10 +103,10 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 ### Known Pending Items
 
 > [!WARNING] Known Pending Items
-> - **DC01 rule (#1)** points to `10.10.10.21`: correct while DC01 is on the Legacy LAN, revisit once VLAN 20 is trunked
-> - **Rule 2 may not be doing anything**: on 2026-09-25 `claude-srv` (`10.10.10.124`, not the main PC) opened `192.168.0.20:8006` fine. Work out which rule actually passed that traffic and whether rule 2 is needed
+> - **DC01 rule (#2)** points to `10.10.10.21`: correct while DC01 is on the Legacy LAN, revisit once VLAN 20 is trunked. Protocol is TCP only, so UDP (DNS, Kerberos, NTP) would fall through to rule 4
+> - **Rule 4 is allow-any**: rules 1 to 3 are redundant until it is narrowed. Narrow it after the VLAN migration, not before: family devices share this LAN and would lose access
 > - **NTP** fails to sync on every boot (see 2026-09-16)
-> - **WAN GUI**: opened with `enableallowallwan` during install, never confirmed closed (see [[pfSense Network Configuration]])
+> - **WAN rules** "Allow all ipv4+ipv6 via pfSsh.php" (from `enableallowallwan`): both disabled 2026-10-03, delete once nothing breaks (see 2026-10-03)
 > - **Proxmox WebUI** sits outside pfSense entirely (`192.168.0.20:8006`, 
 >   on the ISP router's network)
 > - **AP/WiFi still on legacy flat LAN, untagged**: blocked on a managed 
@@ -200,3 +200,12 @@ Mode: **Automatic outbound NAT**, using dynamic "WAN address" reference.
 - VLAN status note updated: no VLAN has devices since the 2026-09-23 migration.
 - Three screenshots flagged as missing were in `attachments/` all along. Rule 2/3 test screenshots embedded, alias warning dropped.
 - **Verification:** TCP checks from `claude-srv`: `10.10.10.1:443` open, `192.168.0.20:8006` open (this last one led to the rule 2 question above).
+
+### 2026-10-03: LAN ruleset review, WAN allow-all disabled
+- **Rule table brought in line with the live box.** Rule "Allow LAN to Internet" is `* -> *` (allow any), not `LAN net -> !LAN net` as documented. Rules 1 to 3 never decide anything while it exists.
+- **Rule 2 question closed.** The main PC rule has source `10.10.10.23` (536 MiB) and works. Redundant because of rule 4, kept as documentation of intent.
+- **iPhone:** static DHCP mapping added for `10.10.10.108`, rule narrowed from any port to TCP 8006.
+- **Dead rule removed:** `10.10.10.1 -> 10.10.10.2` (pfSense to proxmox-lab). Traffic pfSense originates does not pass through its own LAN rules, so it could never match (0 B).
+- **WAN allow-all disabled** (both "via pfSsh.php" rules). State filter on their rule IDs showed only router noise (DHCPv6 from `fe80::1`, IGMP query to `224.0.0.1`). WAN GUI from the phone no longer reachable, accepted. Delete once nothing breaks.
+- **LAN traffic review (states on the allow-any rule):** almost all outbound TCP 443, plus QUIC (UDP 443) and Tailscale (UDP 3478, 41641). Family devices share this LAN with the lab servers. No per-port rules written for them: the fix is moving them to Clients (30) once the managed switch and AP carry VLAN tags.
+- **Backup:** `config.xml` downloaded before any rule change.
