@@ -97,18 +97,78 @@ Real issues from building this, each with symptom, root cause, fix and verificat
 
 ## 📚 Documentation
 
-Docs are split by service: a **Design** doc (architecture and rationale), a **build/implementation** doc (what was actually done), and an **Administration** doc (ongoing ops, dated change log) per component.
+**Start here:** [Project Overview](<HomeLab/1 - Infrastructure/Homelab - Project Overview.md>) for the big picture, [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>) for hardware, IPs and services (it wins any disagreement).
 
-| Area | Docs |
+Docs are split by component, one folder per domain under `HomeLab/`:
+
+- **Design**: architecture and rationale, not a diary.
+- **Build** (named after the service or host): what was actually done, current state plus dated change log.
+- **Administration**: ongoing procedures.
+
+### 1 - Infrastructure
+| Doc | What it covers |
 |---|---|
-| 🖥️ Infrastructure | [Project Overview](<HomeLab/1 - Infrastructure/Homelab - Project Overview.md>) · [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>) · [Proxmox Setup](<HomeLab/1 - Infrastructure/Proxmox Setup.md>) · [Proxmox Administration](<HomeLab/1 - Infrastructure/Proxmox Administration.md>) · [Proxmox Lab Setup](<HomeLab/1 - Infrastructure/Proxmox Lab Setup.md>) |
-| 🔥 pfSense | [Design](<HomeLab/2 - pfSense/pfSense Design.md>) · [Installation](<HomeLab/2 - pfSense/pfSense Installation.md>) · [Network Configuration](<HomeLab/2 - pfSense/pfSense Network Configuration.md>) · [Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>) |
-| 🌐 Remote Access | [Tailscale](<HomeLab/3 - Remote Access/Tailscale.md>) |
-| 🪟 Microsoft / AD | [Active Directory Design](<HomeLab/4 - Microsoft/Active Directory Design.md>) · [AD Administration](<HomeLab/4 - Microsoft/AD Administration.md>) · [DC01](<HomeLab/4 - Microsoft/DC01.md>) · [WIN11-01](<HomeLab/4 - Microsoft/WIN11-01.md>) · [Remote Desktop](<HomeLab/4 - Microsoft/Remote Desktop.md>) · [Entra ID](<HomeLab/4 - Microsoft/Entra ID.md>) · [Single Sign-On Design](<HomeLab/4 - Microsoft/Single Sign-On Design.md>) · [Single Sign-On](<HomeLab/4 - Microsoft/Single Sign-On.md>) |
-| ⚙️ Automation | [Design](<HomeLab/5 - Automation/Automation Design.md>) · [Administration](<HomeLab/5 - Automation/Automation Administration.md>) · [Job Pipeline Design](<HomeLab/5 - Automation/Job Pipeline Design.md>) |
-| 🧩 Services | [Claude Server Design](<HomeLab/6 - Services/Claude Server Design.md>) · [claude-srv](<HomeLab/6 - Services/claude-srv.md>) · [svc-01](<HomeLab/6 - Services/svc-01.md>) · [Homepage Design](<HomeLab/6 - Services/Homepage Design.md>) · [Homepage](<HomeLab/6 - Services/Homepage.md>) · [Hermes Design](<HomeLab/6 - Services/Hermes Design.md>) · [Hermes](<HomeLab/6 - Services/Hermes.md>) · [Hermes Dashboard Design](<HomeLab/6 - Services/Hermes Dashboard Design.md>) · [Hermes Dashboard](<HomeLab/6 - Services/Hermes Dashboard.md>) |
-| 📋 Ops | [Incidents Log](<HomeLab/Incidents Log.md>) · [Security Process](<HomeLab/Security Process.md>) · [Incident Response](<HomeLab/Incident Response.md>) |
-| 🤖 AI Butler (side project) | [Design](<HomeLab/7 - AI Butler/AI Butler Design.md>) |
+| [Project Overview](<HomeLab/1 - Infrastructure/Homelab - Project Overview.md>) | Goals, roadmap, how the lab fits together |
+| [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>) | Hardware, IPs, VMs and services (single source of truth) |
+| [Proxmox Setup](<HomeLab/1 - Infrastructure/Proxmox Setup.md>) | Base install of the A8 node |
+| [Proxmox Administration](<HomeLab/1 - Infrastructure/Proxmox Administration.md>) | Current bridges, network and ops on A8 |
+| [Proxmox Lab Setup](<HomeLab/1 - Infrastructure/Proxmox Lab Setup.md>) | Second node `proxmox-lab`, VM migration |
+
+### 2 - pfSense
+| Doc | What it covers |
+|---|---|
+| [Design](<HomeLab/2 - pfSense/pfSense Design.md>) | Firewall architecture and rule philosophy |
+| [Installation](<HomeLab/2 - pfSense/pfSense Installation.md>) | VM build and first boot |
+| [Network Configuration](<HomeLab/2 - pfSense/pfSense Network Configuration.md>) | Interfaces, VLANs, DHCP |
+| [Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>) | Rules, NAT, logging, hardening, change log |
+
+### 3 - Remote Access
+| Doc | What it covers |
+|---|---|
+| [Tailscale](<HomeLab/3 - Remote Access/Tailscale.md>) | Remote admin with no open ports |
+
+### 4 - Microsoft
+| Doc | What it covers |
+|---|---|
+| [Active Directory Design](<HomeLab/4 - Microsoft/Active Directory Design.md>) | Domain, OU and group model |
+| [AD Administration](<HomeLab/4 - Microsoft/AD Administration.md>) | OUs, users, groups, GPOs, baselines (C1, C4) |
+| [DC01](<HomeLab/4 - Microsoft/DC01.md>) | Domain controller build |
+| [WIN11-01](<HomeLab/4 - Microsoft/WIN11-01.md>) | Domain-joined client build |
+| [Remote Desktop](<HomeLab/4 - Microsoft/Remote Desktop.md>) | RDP into WIN11-01 (module C4+) |
+| [Entra ID](<HomeLab/4 - Microsoft/Entra ID.md>) | Cloud identity, RBAC, Conditional Access, MFA (E1) |
+| [Single Sign-On Design](<HomeLab/4 - Microsoft/Single Sign-On Design.md>) · [Single Sign-On](<HomeLab/4 - Microsoft/Single Sign-On.md>) | SSO design and implementation (E2) |
+
+Windows LAPS (module C4b) has no vault doc yet; it exists only as a Hermes playbook.
+
+### 5 - Automation
+| Doc | What it covers |
+|---|---|
+| [Design](<HomeLab/5 - Automation/Automation Design.md>) | CI/CD and watchdog architecture |
+| [Administration](<HomeLab/5 - Automation/Automation Administration.md>) | Running and changing the pipeline |
+| [Job Pipeline Design](<HomeLab/5 - Automation/Job Pipeline Design.md>) | Semi-automatic job search (planning only) |
+| `scripts/` | Watchdog and deploy scripts shipped by CI |
+
+### 6 - Services
+| Doc | What it covers |
+|---|---|
+| [Claude Server Design](<HomeLab/6 - Services/Claude Server Design.md>) · [claude-srv](<HomeLab/6 - Services/claude-srv.md>) | Always-on Claude Code LXC |
+| [svc-01](<HomeLab/6 - Services/svc-01.md>) | Docker host for dashboards |
+| [Homepage Design](<HomeLab/6 - Services/Homepage Design.md>) · [Homepage](<HomeLab/6 - Services/Homepage.md>) | Landing dashboard |
+| [Hermes Design](<HomeLab/6 - Services/Hermes Design.md>) · [Hermes](<HomeLab/6 - Services/Hermes.md>) | Morning/evening email briefings |
+| [Hermes Dashboard Design](<HomeLab/6 - Services/Hermes Dashboard Design.md>) · [Hermes Dashboard](<HomeLab/6 - Services/Hermes Dashboard.md>) | Dashboard and phase playbooks (academy) |
+| [mock-apps](<HomeLab/6 - Services/mock-apps/README.md>) | Okta and Slack mock OAuth apps for red-team testing |
+
+### 7 - AI Butler (side project)
+| Doc | What it covers |
+|---|---|
+| [Design](<HomeLab/7 - AI Butler/AI Butler Design.md>) | Voice assistant plus Home Assistant, planning only |
+
+### Cross-cutting (`HomeLab/` root)
+| Doc | What it covers |
+|---|---|
+| [Incidents Log](<HomeLab/Incidents Log.md>) | Dated incidents: symptom, cause, fix |
+| [Security Process](<HomeLab/Security Process.md>) | Audit cadence and rules (draft) |
+| [Incident Response](<HomeLab/Incident Response.md>) | IR plan (draft v0, to redo as a tabletop) |
 
 ## 🚫 Deliberate non-goals (for now)
 
