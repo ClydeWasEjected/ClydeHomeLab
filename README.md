@@ -76,7 +76,7 @@ Real issues from building this, each with symptom, root cause, fix and verificat
 | pfSense admin password crossed the LAN in clear text | WebGUI served over HTTP; switched to HTTPS | [pfSense Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>) |
 | VLAN 20 broke when VMs moved to a second host | Tagging only ever happened inside one Proxmox bridge; no physical 802.1Q path | [Proxmox Lab Setup](<HomeLab/1 - Infrastructure/Proxmox Lab Setup.md>) |
 | Windows VM laggy after migration | `cpu: host` pinned to AMD, new node is Intel | [Proxmox Lab Setup](<HomeLab/1 - Infrastructure/Proxmox Lab Setup.md>) |
-| DC clock 9 hours ahead | Wrong time zone, time set by hand, no NTP source (breaks Kerberos) | [DC01](<HomeLab/4 - Microsoft/DC01.md>) |
+| DC clock 9 hours ahead | Wrong time zone, time set by hand, no NTP source (breaks Kerberos) | [DC01](<HomeLab/4 - Microsoft/Active Directory/DC01.md>) |
 | Container escape risk | Privileged LXC with unconfined AppArmor, rebuilt unprivileged | [svc-01](<HomeLab/6 - Services/svc-01.md>) |
 | CI needed SSH into the hypervisor | Deploy key locked to one allowlisted command | [Automation Design](<HomeLab/5 - Automation/Automation Design.md>) |
 
@@ -128,15 +128,23 @@ Docs are split by component, one folder per domain under `HomeLab/`:
 | [Tailscale](<HomeLab/3 - Remote Access/Tailscale.md>) | Remote admin with no open ports |
 
 ### 4 - Microsoft
+
+**Active Directory** (on-prem, phase C)
+
 | Doc | What it covers |
 |---|---|
-| [Active Directory Design](<HomeLab/4 - Microsoft/Active Directory Design.md>) | Domain, OU and group model |
-| [AD Administration](<HomeLab/4 - Microsoft/AD Administration.md>) | OUs, users, groups, GPOs, baselines (C1, C4) |
-| [DC01](<HomeLab/4 - Microsoft/DC01.md>) | Domain controller build |
-| [WIN11-01](<HomeLab/4 - Microsoft/WIN11-01.md>) | Domain-joined client build |
-| [Remote Desktop](<HomeLab/4 - Microsoft/Remote Desktop.md>) | RDP into WIN11-01 (module C4+) |
-| [Entra ID](<HomeLab/4 - Microsoft/Entra ID.md>) | Cloud identity, RBAC, Conditional Access, MFA (E1) |
-| [Single Sign-On Design](<HomeLab/4 - Microsoft/Single Sign-On Design.md>) · [Single Sign-On](<HomeLab/4 - Microsoft/Single Sign-On.md>) | SSO design and implementation (E2) |
+| [Active Directory Design](<HomeLab/4 - Microsoft/Active Directory/Active Directory Design.md>) | Domain, OU and group model |
+| [AD Administration](<HomeLab/4 - Microsoft/Active Directory/AD Administration.md>) | OUs, users, groups, GPOs, baselines (C1, C4) |
+| [DC01](<HomeLab/4 - Microsoft/Active Directory/DC01.md>) | Domain controller build |
+| [WIN11-01](<HomeLab/4 - Microsoft/Active Directory/WIN11-01.md>) | Domain-joined client build |
+| [Remote Desktop](<HomeLab/4 - Microsoft/Active Directory/Remote Desktop.md>) | RDP into WIN11-01 (module C4+) |
+
+**Entra and SSO** (cloud identity, phase E)
+
+| Doc | What it covers |
+|---|---|
+| [Entra ID](<HomeLab/4 - Microsoft/Entra and SSO/Entra ID.md>) | Cloud identity, RBAC, Conditional Access, MFA (E1) |
+| [Single Sign-On Design](<HomeLab/4 - Microsoft/Entra and SSO/Single Sign-On Design.md>) · [Single Sign-On](<HomeLab/4 - Microsoft/Entra and SSO/Single Sign-On.md>) | SSO design and implementation (E2) |
 
 Windows LAPS (module C4b) has no vault doc yet; it exists only as a Hermes playbook.
 

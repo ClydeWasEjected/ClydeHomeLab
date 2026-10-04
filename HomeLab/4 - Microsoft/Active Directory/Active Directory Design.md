@@ -1,6 +1,6 @@
 # Active Directory Design
 
-Related: [[AD Administration]] · [[DC01]] · [[WIN11-01]] · [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>)
+Related: [[AD Administration]] · [[DC01]] · [[WIN11-01]] · [Homelab - Inventory](<../../1 - Infrastructure/Homelab - Inventory.md>)
 
 ## Objective
 Deploy and simulate a basic enterprise Active Directory environment using Windows Server 2022 and Windows 11 clients for:
@@ -33,7 +33,7 @@ flowchart TB
 
 ### Network placement
 
-Both DC01 and WIN11-01 live on the **Servers VLAN (20)**. See [[pfSense Configuration]] for the VLAN plan and [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>) for current live IPs (don't duplicate exact IPs here; they drift).
+Both DC01 and WIN11-01 live on the **Servers VLAN (20)**. See [[pfSense Configuration]] for the VLAN plan and [Homelab - Inventory](<../../1 - Infrastructure/Homelab - Inventory.md>) for current live IPs (don't duplicate exact IPs here; they drift).
 
 > [!IMPORTANT] Design rule
 > **DC01 is authoritative DNS for the domain and resolves itself.** Every domain machine, DC01 included, must use DC01 as its DNS server. DC01 does not use the VLAN gateway as DNS.
@@ -91,7 +91,7 @@ flowchart LR
 ## Proxmox Virtualization Setup
 
 > [!NOTE] Moved to proxmox-lab
-> **As of 2026-09-23, both VMs live on `proxmox-lab`, not the A8.** See [[Proxmox Lab Setup]] for the migration and current host details, and [Homelab - Inventory](<../1 - Infrastructure/Homelab - Inventory.md>) for current IPs (temporarily off VLAN 20, see there). Powered-off rollback copies of both remain on the A8. The specs below are what's actually running; don't treat this section as authoritative for network placement.
+> **As of 2026-09-23, both VMs live on `proxmox-lab`, not the A8.** See [[Proxmox Lab Setup]] for the migration and current host details, and [Homelab - Inventory](<../../1 - Infrastructure/Homelab - Inventory.md>) for current IPs (temporarily off VLAN 20, see there). Powered-off rollback copies of both remain on the A8. The specs below are what's actually running; don't treat this section as authoritative for network placement.
 
 ### Host Configuration
 - Hypervisor: Proxmox VE, host `proxmox-lab` (was A8 before 2026-09-23)
@@ -108,4 +108,4 @@ flowchart LR
 | Disk | 50GB (`ide0`, not yet moved to VirtIO) | 60GB disk (`ide0`, not yet moved to VirtIO) |
 | CPU type | n/a | `x86-64-v2-AES` (was `cpu: host`, inherited from the AMD A8 build; caused visible lag once running on the lab node's Intel CPU. This was the actual fix, not the RAM/CPU bump) |
 
-![](attachments/Pasted%20image%2020260531005219.png)
+![](../attachments/Pasted%20image%2020260531005219.png)
