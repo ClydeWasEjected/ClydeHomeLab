@@ -14,7 +14,7 @@ RDP into the domain client so copy and paste work (the Proxmox console has no cl
 | Built-in rule group "Remote Desktop" | Must stay disabled: it accepts any device on the network |
 | NLA | On (client proves identity before a session starts) |
 | Who may sign in | Local `Administrators` (includes `lapsadmin`), plus members of `SG_RDP_Access` |
-| Group | `SG_RDP_Access`, `OU=Groups,OU=IT,OU=Departments`. Members: none as of 2026-10-04 |
+| Group | `SG_RDP_Access`, `OU=Groups,OU=IT,OU=Departments`. Members (nested groups, 2026-10-04): `SG_Workstation_Joiners`, `SG_IT_Users`, `SG_IT_Admins` |
 | GPO | `GP-RDP-Access`, linked to `OU=Departments`. Intent: Group Policy Preferences, Local Users and Groups, Update `Remote Desktop Users (built-in)` adding `JNCLYDEHL\SG_RDP_Access`; User Rights Assignment, Allow log on through Remote Desktop Services: `Remote Desktop Users`, `Administrators` |
 
 **Sign-in formats**
@@ -57,6 +57,6 @@ RDP into the domain client so copy and paste work (the Proxmox console has no cl
 - **Why:** Copy and paste into the VM, and a repeatable way to grant RDP by group instead of per machine.
 - **Issue:** During troubleshooting the built-in "Remote Desktop" firewall rule group was enabled, which opens 3389 to any device on the network and contradicts the design. To be disabled; the scoped rule stays.
 - **Issue:** `GP-RDP-Access` breaks the `GPO-` naming used by the other GPOs: rename.
-- **Issue:** First test as a domain user returned "not authorized for remote login"; `SG_RDP_Access` had no members at that point.
+- **Issue:** First test as a domain user returned "not authorized for remote login"; `SG_RDP_Access` had no members at that point. Fixed by nesting `SG_Workstation_Joiners`, `SG_IT_Users` and `SG_IT_Admins` into it.
 - **Issue:** `gpupdate /force` on `WIN11-01` had been logging events 1055 and 1006 (computer policy). Not the cause here, but GPO delivery to this machine must be confirmed with `gpresult` before relying on `GP-RDP-Access`.
 - **Verification:** `lapsadmin` signed in over RDP and copy/paste worked (reported by Clyde). The verification items above are still open.
