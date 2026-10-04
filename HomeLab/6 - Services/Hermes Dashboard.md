@@ -392,3 +392,6 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 ### 2026-10-04: StudentBoard page, Meanwhile and Where to find people
 - **What:** two cards on `studentboard.html`: **Meanwhile** (tasks before the test, from the `While waiting for interviews` table in `Ruta-IT-Business-Plan.md`; a row shows as done when its Done cell says yes) and **Where to find people** (channels by segment plus the message for the Institut TIC teacher, from `Ruta-IT-Mom-Test.md`). Interview target now reads 5 minimum, goal 8. `studentboard.py` reads the two new tables.
 - **Verification:** `qjs --std test_studentboard.js` renders both cards, no undefined values; svc-01 serves the page. Backups: `*.bak-20261004-wait`.
+
+### 2026-10-04: StudentBoard page, Revenue tab
+- **What:** Business card gets a Revenue tab, read from `## 7. Revenue options` in `Ruta-IT-Business-Plan.md` (`studentboard.py` `revenue`). Smoke test clean, page redeployed. Backups: `*.bak-20261004-rev`.
