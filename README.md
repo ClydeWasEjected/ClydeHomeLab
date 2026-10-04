@@ -86,7 +86,7 @@ Real issues from building this, each with symptom, root cause, fix and verificat
 |---|---|---|
 | A | pfSense: firewall rules, NAT, logging, allow/deny | 🟡 In progress |
 | B | VLAN segmentation: Management / Servers / Clients / Security, inter-VLAN control | 🟡 Started (VLANs exist, switch trunk pending) |
-| C | Enterprise AD: OUs, groups, service accounts, GPOs, Windows LAPS, delegation | 🟡 In progress (C1 structure done, GPOs next) |
+| C | Enterprise AD: OUs, groups, service accounts, GPOs, Windows LAPS, delegation | 🟡 In progress (C1 structure and C4 GPOs done, Remote Desktop written, LAPS next) |
 | D | PowerShell / automation: scripted, rebuildable environments | 🟡 Started (CI/CD for Bash watchdogs) |
 | E | Microsoft Cloud: Entra ID, hybrid identity, M365, Intune, Autopilot, Conditional Access | ⬜ Pending |
 | F | Security monitoring: Sysmon, event logging, SIEM (Wazuh), detection rules | ⬜ Pending |
@@ -98,6 +98,14 @@ Real issues from building this, each with symptom, root cause, fix and verificat
 ## 📚 Documentation
 
 **Start here:** [Project Overview](<HomeLab/1 - Infrastructure/Homelab - Project Overview.md>) for the big picture, [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>) for hardware, IPs and services (it wins any disagreement).
+
+**How to read them**
+
+- **Reading paths:** 2 minutes: this page, then the [Project Overview](<HomeLab/1 - Infrastructure/Homelab - Project Overview.md>). 10 minutes: add the [Inventory](<HomeLab/1 - Infrastructure/Homelab - Inventory.md>) and one build doc such as [pfSense Configuration](<HomeLab/2 - pfSense/pfSense Configuration.md>). Evidence of real problem solving: the [Incidents Log](<HomeLab/Incidents Log.md>).
+- **Inside a doc:** every build or admin doc has a **Current State** (what is true now) and a dated **Change Log** (what changed, why, how it was verified). Read Current State first; the Change Log is the history.
+- **Callouts:** `IMPORTANT` marks the single source of truth or a rule, `WARNING` marks an open risk, `NOTE` marks a superseded or side detail.
+- **Status icons:** 🟢 done, 🟡 in progress, ⬜ pending.
+- **Links:** `[[Name]]` jumps to another doc in Obsidian; the tables below use full paths so they also work on GitHub.
 
 Docs are split by component, one folder per domain under `HomeLab/`:
 
