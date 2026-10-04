@@ -166,10 +166,23 @@ Windows LAPS (module C4b) has no vault doc yet; it exists only as a Hermes playb
 | [Hermes Dashboard Design](<HomeLab/6 - Services/Hermes Dashboard Design.md>) · [Hermes Dashboard](<HomeLab/6 - Services/Hermes Dashboard.md>) | Dashboard and phase playbooks (academy) |
 | [mock-apps](<HomeLab/6 - Services/mock-apps/README.md>) | Okta and Slack mock OAuth apps for red-team testing |
 
-### 7 - AI Butler (side project)
-| Doc | What it covers |
+### Where is each playbook module documented?
+
+| Phase | Module | Doc |
+|---|---|---|
+| C | C1 OUs, groups, users, naming | [AD Administration](<HomeLab/4 - Microsoft/Active Directory/AD Administration.md>) |
+| C | C4 Group Policy baseline | [AD Administration](<HomeLab/4 - Microsoft/Active Directory/AD Administration.md>), section "Group Policy" and change log 2026-09-28 |
+| C | C4+ Remote Desktop (`rdp1`) | [Remote Desktop](<HomeLab/4 - Microsoft/Active Directory/Remote Desktop.md>) |
+| C | C4b Windows LAPS | not written yet (playbook only) |
+| C | C5 File shares and NTFS | not written yet (playbook only) |
+| E | E1 Entra ID | [Entra ID](<HomeLab/4 - Microsoft/Entra and SSO/Entra ID.md>) |
+| E | E2 Single Sign-On | [Single Sign-On](<HomeLab/4 - Microsoft/Entra and SSO/Single Sign-On.md>) |
+| S | S1 Security process | [Security Process](<HomeLab/Security Process.md>), [Incident Response](<HomeLab/Incident Response.md>) |
+
+### Side projects (outside the A-H roadmap)
+| Project | Doc |
 |---|---|
-| [Design](<HomeLab/7 - AI Butler/AI Butler Design.md>) | Voice assistant plus Home Assistant, planning only |
+| AI Butler | [Design](<Side Projects/AI Butler/AI Butler Design.md>) |
 
 ### Cross-cutting (`HomeLab/` root)
 | Doc | What it covers |
