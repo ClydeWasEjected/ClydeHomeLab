@@ -198,6 +198,7 @@ Windows LAPS (module C4b) has no vault doc yet; it exists only as a Hermes playb
 | [Incidents Log](<HomeLab/Incidents Log.md>) | Dated incidents: symptom, cause, fix |
 | [Security Process](<HomeLab/Security Process.md>) | Audit cadence and rules (draft) |
 | [Incident Response](<HomeLab/Incident Response.md>) | IR plan (draft v0, to redo as a tabletop) |
+| [Cert Roadmap](<HomeLab/Cert Roadmap.md>) | Researched paid and free cert paths for the SOC to red-team goal (proposal) |
 
 ## 🚫 Deliberate non-goals (for now)
 
