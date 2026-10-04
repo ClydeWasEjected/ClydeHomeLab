@@ -1,0 +1,34 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+- Hypervisors:
+    - Proxmox-A8:
+        href: https://192.168.0.20
+        description: Proxmox-A8 webgui
+        icon: proxmox.png
+        siteMonitor: https://192.168.0.20
+    - Proxmox-lab:
+        href: https://10.10.10.2
+        description: Proxmox-Lab webgui
+        icon: proxmox.png
+        siteMonitor: https://10.10.10.2
+
+- Microsoft Vms:
+    - DC01:
+        href: https://10.10.10.2:8006/?console=kvm&novnc=1&vmid=100&vmname=DC01&node=proxmox-lab
+        ping: http://10.10.10.21/
+        description: Active Directory Server
+        icon: microsoft-color.png
+    - WIN11-01:
+        href: https://10.10.10.2:8006/?console=kvm&novnc=1&vmid=101&vmname=Win11-01&node=proxmox-lab
+        ping: http://10.10.10.22/
+        description: Windows Client
+        icon: windows11.png
+      
+- Network:
+    - pfSense:
+        href: https://10.10.10.1/
+        description: pfSense webgui
+        icon: pfsense.png
+        siteMonitor: https://10.10.10.1
