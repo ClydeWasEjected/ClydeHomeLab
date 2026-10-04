@@ -47,13 +47,14 @@ flowchart LR
         e["SG_Workstation_Joiners<br/>join computers"]
     end
 ```
-| Group | Type/Scope | Purpose | Members |
-|---|---|---|---|
-| SG_IT_Admins | Security, Global | Elevated permissions within IT's scope (no rights granted yet) | `adm.clyde` |
-| SG_IT_Users | Security, Global | Standard IT department users | `marc.puig` |
-| SG_Security_Analysts | Security, Global | Access to logs/monitoring (future SIEM) | `laura.vidal` |
-| SG_Operations_Users | Security, Global | Standard "regular user" baseline | `jordi.serra` |
-| SG_Workstation_Joiners | Security, Global | Delegated join-domain permission (planned for C3: delegation, not yet done) | none |
+
+| Group                  | Type/Scope       | Purpose                                                                     | Members       |
+| ---------------------- | ---------------- | --------------------------------------------------------------------------- | ------------- |
+| SG_IT_Admins           | Security, Global | Elevated permissions within IT's scope (no rights granted yet)              | `adm.clyde`   |
+| SG_IT_Users            | Security, Global | Standard IT department users                                                | `marc.puig`   |
+| SG_Security_Analysts   | Security, Global | Access to logs/monitoring (future SIEM)                                     | `laura.vidal` |
+| SG_Operations_Users    | Security, Global | Standard "regular user" baseline                                            | `jordi.serra` |
+| SG_Workstation_Joiners | Security, Global | Delegated join-domain permission (planned for C3: delegation, not yet done) | none          |
 
 ### Users
 
