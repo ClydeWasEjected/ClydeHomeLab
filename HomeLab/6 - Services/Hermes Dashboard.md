@@ -395,3 +395,9 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 
 ### 2026-10-04: StudentBoard page, Revenue tab
 - **What:** Business card gets a Revenue tab, read from `## 7. Revenue options` in `Ruta-IT-Business-Plan.md` (`studentboard.py` `revenue`). Smoke test clean, page redeployed. Backups: `*.bak-20261004-rev`.
+
+### 2026-10-05: students-01 serves the learner site (landing, legal, learner playbook)
+- **What:** CT 107 `students-01` (A8, vmbr2, 10.10.50.31, Tailscale tagged node, Funnel `https://students-01.tailfdea8b.ts.net` to 127.0.0.1:8080) now runs `learner-site.service` (`/opt/learner-site/serve.py`, static files in `/srv/site`, user nobody, sandboxed) instead of the temporary `testpage.service` (disabled, kept). Sources and `deploy.sh` live in the StudentBoard vault `03-Marketing/learner-site/`; deploy goes through `pct push` from proxmox-a8.
+- **Isolation checked from inside the CT:** no route to claude-srv (8095, 8096, ssh), svc-01 (ssh, 443, 3000), proxmox-a8 (8006, ssh), the Windows PC, pfSense or the LAN. Internet and its own DNS only.
+- **Nothing of the Hermes dashboard is copied:** the learner page is a separate build (Spanish, no ticks or notes API, no host names). The server keeps no logs about visitors; Funnel passes the visitor IP in X-Forwarded-For and it is not stored.
+- **Not done:** per-learner progress API (token backend, Clyde writes it), tailscale ACL review, rate limiting in front of Funnel. Rollback: `systemctl disable --now learner-site; systemctl enable --now testpage`.
