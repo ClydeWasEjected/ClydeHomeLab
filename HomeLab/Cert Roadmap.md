@@ -51,7 +51,7 @@ Deferred: SC-900, AZ-900 (low signal), AZ-104, MD-102 (job-relevant to the Adecc
 
 | Tier | Item | Cost | Why |
 |---|---|---|---|
-| A | ISC2 Certified in Cybersecurity | free exam under the ISC2 one-million-certified program, then 50 USD/year maintenance (verify current terms on isc2.org) | Only free cert with a proctored, accredited exam. ISC2 ranks it second among preferred entry/junior qualifications. Multiple choice, below Security+ in recognition. |
+| X | ISC2 Certified in Cybersecurity | voucher already redeemed and expired (Clyde, 2026-10-04) | Was the only free cert with a proctored, accredited exam. Unknown whether ISC2 support will reissue an expired voucher; worth one email, not worth planning around. |
 | A | Microsoft Learn SC-200 learning path | free | Same content as the paid cert. Study now, pay for the exam in 2027. |
 | A | Homelab write-ups (Wazuh, Sentinel free tier, Splunk) | free | Documentation and reporting are explicit entry-level expectations in ISC2 research. The vault is the portfolio. |
 | A | TryHackMe free rooms | free, 1 hour/day AttackBox | Structured beginner paths. SAL1 (paid) is the SOC-recognised one later. |
@@ -64,10 +64,12 @@ Offensive free content (HTB Tier 0, THM beginner rooms) is for fundamentals only
 
 ## Open Questions
 
+- Balance: this research only searched cybersecurity, so it is cyber-heavy by construction. Demand for sysadmin/Microsoft admin roles in Barcelona (MD-102, AZ-104, SC-300 as hiring bridge) was not researched. Junior SOC listings seen ask for experience, so the security target likely needs an IT/cloud-admin bridge job first.
 - Budget and date for 2027 certs.
 - Whether to replace the order in `CLAUDE.md` and the Hermes cert tracks with the paid path above.
 - Verify before buying: ISC2 CC free terms, SC-900 voucher, HTB pricing, CJCA price, exam prices for SC-200/SC-300 in EUR.
 
 ## Change Log
 
+- 2026-10-04: ISC2 CC marked unavailable (voucher expired). Added balance question.
 - 2026-10-04: Created. 5 research topics (SOC certs, pentest certs, free certs, whether certs matter, Spain market), sources graded above.

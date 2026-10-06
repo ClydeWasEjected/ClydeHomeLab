@@ -110,3 +110,11 @@ cd ~/vault && claude
 - **Cause:** the `claude rc` process had exited and its tmux window closed, but resumed sessions (`claude --resume … --remote-control`) had been opened as extra windows on the same `rc` tmux server. The server stayed up, so systemd (which tracks the tmux server) never restarted anything.
 - **Fix:** started `claude rc` again in a new window `rc` inside a `while true` restart loop, without restarting the service (that would have killed the live sessions). Unit changed to the same loop for future boots (backup `claude-rc.service.bak-20260925`), `daemon-reload` only.
 - **Verification:** `claude rc` running (pid 19726), pane shows `Connected · ClydeHomeLab`, capacity 2/32.
+
+### 2026-10-04: StudentBoard Remote Control and sync
+
+- Added user unit `claude-rc-studentboard.service` (same restart loop as `claude-rc`), tmux socket `rc-sb`, working directory `~/studentboard`. One `claude rc` per folder, so it is a second unit, not a second window of `rc`.
+- First start failed with "Workspace not trusted": trust must be accepted once by Clyde (`cd ~/studentboard && claude`, or `y` in `tmux -L rc-sb attach -t rc`). The loop retries every 5 s.
+- Added Syncthing folder `studentboard` (`~/studentboard`, send/receive, shared with the laptop). Laptop side must accept it into an empty path: rename the old `C:\Users\Clyde\StudentBoard` first, otherwise its pre-restructure files sync back.
+- Vault rebuilt as a 360 founder OS the same day (domain folders, six agents in `.claude/agents/`, weekly rhythm). Local git commit `3956e01`, no remote.
+- **Verification:** unit active, Syncthing folder scanned (119 files, 0 errors). RC connection pending trust acceptance.
