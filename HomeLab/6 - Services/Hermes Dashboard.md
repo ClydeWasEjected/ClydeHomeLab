@@ -54,7 +54,7 @@ flowchart LR
 | Upcoming (5/12) | Next 7 days of events, reminders count | `calendar.json`, `reminders.json` |
 | Messages (7/12) | Up to 8 inbox threads that matter, category, "reply" tag, unread count, link to Gmail | `mail.json` |
 | Fortune (5/12) | Pipeline bar, live processes, follow-ups due (7 to 21 days), reply rate | `Career.md` `## Job search log` via `build.py` |
-| The road (7/12) | Phase stepper, all 8 phases with bar and note, cert path | Latest Hermes morning report `phases`, `config.json` `certs` |
+| The road (7/12) | Phase stepper, all 8 phases with bar and note, two cert lanes (free now, paid 2027, 6 items each, hover for note) | Latest Hermes morning report `phases`, `config.json` `certs` (each item has `lane` free or paid, `id`, `state`, `note`) |
 | Sentinels (6/12) | Tabs: Hosts (TCP check + latency), Scripts (tap for log summary), Watchdogs | `config.json` services, systemd `UNITS`, Proxmox API journal |
 | Wins (6/12) | Highlights (48 h), day-by-day commits (5 days), 26-week heatmap | `brief.json` `wins`, `build.py` `daily`, `heatmap` |
 | Side projects (12/12) | One line per side project: name and status. Off the road, so no phase and no roadmap doc | `build.py` `side_projects()`: notes in `~/.claude/global-memory/Projects/` with `side: true` |
@@ -401,3 +401,7 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 - **Isolation checked from inside the CT:** no route to claude-srv (8095, 8096, ssh), svc-01 (ssh, 443, 3000), proxmox-a8 (8006, ssh), the Windows PC, pfSense or the LAN. Internet and its own DNS only.
 - **Nothing of the Hermes dashboard is copied:** the learner page is a separate build (Spanish, no ticks or notes API, no host names). The server keeps no logs about visitors; Funnel passes the visitor IP in X-Forwarded-For and it is not stored.
 - **Not done:** per-learner progress API (token backend, Clyde writes it), tailscale ACL review, rate limiting in front of Funnel. Rollback: `systemctl disable --now learner-site; systemctl enable --now testpage`.
+
+### 2026-10-06: Cert path split into free and paid lanes
+
+- `config.json` `certs` now holds 12 items tagged `lane: free|paid`; `index.html` draws two rows in The road. `build.py` unchanged (passes the list through). Contents follow [[Cert Roadmap]]. Deployed with the scp above, md5 matches. Backups `config.json.bak-20261006-certs`, `site/index.html.bak-20261006-certs`.
