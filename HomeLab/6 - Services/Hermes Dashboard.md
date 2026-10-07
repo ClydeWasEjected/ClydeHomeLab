@@ -409,3 +409,9 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 ### 2026-10-06 (later): lanes redrawn as lists
 
 - The 6-column strip collided on long names, so each lane is now a list: full course/cert name plus a line with provider, cost and timing. Entra item dropped (Clyde already has an Entra homelab). Old browsers may show the cached strip until a hard refresh. Backups `*.bak-20261006-certs2`.
+
+### 2026-10-07: learner panel preview linked from StudentBoard page
+
+- **What:** `studentboard.html` header gets "Learner panel preview ↗", opening `sb-preview.html`: a self-contained copy of the "De cero a IT" learner panel (curriculum, Poppins fonts and logo inlined, CSP widened only for `data:` images and fonts). A fake `fetch` keeps day ticks in that browser's localStorage; no token, no learner data, never calls the learner API.
+- **Rebuild after editing the curriculum:** `python3 ~/dashboard/build_sb_preview.py` (builds from the current branch of `~/learner-site`), then `scp ~/dashboard/site/sb-preview.html adm-jnclyde@10.10.10.30:hermes/site/`.
+- **Verification:** both files scp'd, md5 matches, `sb-preview.html` 200 from svc-01, `test_studentboard.js` clean. Preview script run in qjs with a fake DOM: renders day 1, ticket, quiz and extra, tick and untick work. **Not verified:** a real browser. Backup `site/studentboard.html.bak-20261007-preview`.
