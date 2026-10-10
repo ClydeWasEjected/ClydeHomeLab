@@ -1,7 +1,7 @@
 #!/bin/bash
 # Watchdog: detects admin-down critical interfaces and brings them back up.
 # Only touches WATCHED_IFACES plus any enx* USB NIC, never scans the whole host.
-# Logs only state changes (down/recovered/missing), not every healthy run.
+# Logs only state changes (down/recovered/missing), plus one heartbeat line to the journal every 10 min.
 # Deployed at /usr/local/bin/fix-down-interfaces.sh on proxmox-a8, run via
 # fix-down-interfaces.service + fix-down-interfaces.timer (OnBootSec=10, OnUnitActiveSec=60).
 # See: HomeLab/1 - Infrastructure/Proxmox Administration.md
@@ -9,6 +9,8 @@
 WATCHED_IFACES=("vmbr0" "vmbr1" "nic0")
 LOG="/var/log/iface-down-watchdog.log"
 STATE_DIR="/run/iface-down-watchdog"
+HB_FILE="$STATE_DIR/.heartbeat"
+HB_MIN=10
 mkdir -p "$STATE_DIR"
 
 # USB NICs get names like enx<mac>; pick up whichever is plugged in
@@ -44,3 +46,9 @@ for iface in "${WATCHED_IFACES[@]}"; do
         set_state "$iface" failed "was admin-down, failed to bring up"
     fi
 done
+
+# Heartbeat for the dashboard: the file log stays quiet, the journal gets one line per HB_MIN
+if [[ -z "$(find "$HB_FILE" -mmin -"$HB_MIN" 2>/dev/null)" ]]; then
+    echo "ok: ${#WATCHED_IFACES[@]} interfaces checked"
+    touch "$HB_FILE"
+fi

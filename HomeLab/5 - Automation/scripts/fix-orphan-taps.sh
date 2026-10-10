@@ -8,14 +8,19 @@
 # See: HomeLab/1 - Infrastructure/Proxmox Administration.md
 
 log="/var/log/bridge-tap-watchdog.log"
+HB_FILE="/run/bridge-tap-watchdog.hb"
+HB_MIN=10    # heartbeat to the journal at most every HB_MIN minutes, only when nothing needed fixing
+ok_count=0
+problems=0
 ports=$(ip -o link show | awk -F': ' '{print $2}' | cut -d@ -f1 | grep -E '^(tap[0-9]+i|fwpr[0-9]+p)[0-9]+$')
 for port in $ports; do
         vmid=$(echo "$port" | grep -oP '^(tap|fwpr)\K[0-9]+')
         netidx=$(echo "$port" | grep -oP '[ip]\K[0-9]+$')
         if ip link show "$port" | grep -q "master"; then
-                echo "$port tiene master"
+                ok_count=$((ok_count + 1))
                 continue
         fi
+        problems=1
         echo "$port no tiene master"
         # LXC config lives in /etc/pve/lxc, VM config in /etc/pve/qemu-server
         if [ -e "/etc/pve/lxc/${vmid}.conf" ]; then
@@ -38,3 +43,9 @@ for port in $ports; do
         fi
         echo ""
 done
+
+# Heartbeat: proves the watchdog ran and found everything attached, without a line per port per minute
+if [ "$problems" -eq 0 ] && [ -z "$(find "$HB_FILE" -mmin -"$HB_MIN" 2>/dev/null)" ]; then
+        echo "ok: $ok_count ports attached"
+        touch "$HB_FILE"
+fi
