@@ -73,7 +73,7 @@ Ticks (errands, the one thing) are keyed by a hash of the task text and stored o
 {"items": [{"text": "Rearm DC01 eval", "due": "2026-11-15T09:00:00+01:00", "done": false}]}
 ```
 
-### Watchdog feed: read-only Proxmox token (to do, Clyde)
+### Watchdog feed: read-only Proxmox token (done 2026-10-10)
 
 `build.py` reads the A8 journal through `GET /api2/json/nodes/proxmox-a8/journal`. The token needs `Sys.Syslog` only: it can read logs, nothing else. The A8 certificate is self-signed, so `build.py` pins its SHA-256 fingerprint (`config.json` `watchdogs.fingerprint`) and refuses to send the token if it changes.
 
@@ -110,7 +110,7 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 - **Multi-account Gmail:** the claude.ai Gmail connector holds one Google account at a time, so Messages and the inbox briefing see only `clyde.john253`, not `clyde.jcaiga`. Plan: a self-hosted multi-account Gmail MCP server on claude-srv (preferred over third-party services like Composio, which would hold mailbox access), read-only scopes for the dashboard sync.
 - Reminders source.
 - **Course completion certificates:** PDF with unique ID plus a verify page, linked to lab evidence. Idea stage, not started (2026-10-09). Details in global memory note `Projects/Course Certificates`.
-- Read-only Proxmox token for the Watchdogs tab (below).
+- **Homelab SSH launcher:** GUI with a button per host that opens SSH. Idea stage, not started (2026-10-10). Claude builds the GUI, Clyde writes the host list and `Connect-Host`. Details in global memory note `Projects/Homelab SSH Launcher`.
 
 ### Operations
 
@@ -422,3 +422,9 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 - **Data:** `~/learner-site/backend/status.py --loop 20 ~/dashboard/public` runs as the user unit `learner-status.service` (enabled, lingering on): every 20 s it reads each learner's ticks from the student containers through the Proxmox host over one persistent ssh connection (ControlPersist), and rewrites the two JSON files. The page polls every 10 s and shows "stale" after 2 minutes. `studentboard.py` is not involved (the first attempt, a card on `studentboard.html`, was reverted).
 - **Deploy:** `scp ~/dashboard/site/learners.html adm-jnclyde@10.10.10.30:hermes/site/`. Until the page is copied, svc-01's `try_files $uri /index.html` answers the main dashboard for `/learners.html`, which looks like "the same page".
 - **Verification:** md5 matches on svc-01, `/learners.html` and `/data/students.json` 200 through nginx, `qjs --std test_learners.js <data folder>` clean with fake learners, a tick on the staging test learner showed in the JSON within 20 s. **Not verified:** a real browser. Backup of the config: `config.json.bak-20261008-learners`.
+
+### 2026-10-10: Watchdogs feed connected, logs on both dashboards
+
+- **What:** read-only token `dashboard@pve!feed` created (role `DashboardLog`, `Sys.Syslog` on `/nodes/proxmox-a8`) and stored in `~/.config/pve-dashboard.token` (mode 600). `build.py` `pve_journal`: timeout 5 s to 30 s (the journal call takes about 5 s) and gzip handling (pveproxy compresses the response). `watchdogs()` writes `public/logs/wd-<unit>.txt` (last 40 matching journal lines). Hermes Systems card: `log` link per watchdog row. Homepage: `href` to the same log on both Watchdogs cards (source `~/dashboard/homepage/lab/services.yaml`, live `~/homepage/config/services.yaml` on svc-01).
+- **Why `fix-down-interfaces` showed unknown:** `fix-orphan-taps` printed one line per port per minute and pushed `fix-down-interfaces` out of the 600-entry journal window. Both scripts now print one `ok:` heartbeat line every 10 minutes and stay quiet otherwise, see [[Automation Administration]].
+- **Verification:** API call returns the journal, `fix-orphan-taps` shows ok. After deploy the first run printed `ok: 5 ports attached`. Hermes link and Homepage `href` not browser-tested. Backups: `build.py.bak-20261010-*`, `index.html.bak-20261010-wdlogs`, `services.yaml.bak-20261010-wdlogs`.
