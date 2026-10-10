@@ -49,6 +49,18 @@ RDP into the domain client so copy and paste work (the Proxmox console has no cl
 | `Reset-LapsPassword`: "not running as a local administrator" | Window not elevated, or `adm.clyde` not yet local admin (`GPO-Local-Admins` not applied) | Run PowerShell as administrator, check `net localgroup administrators` |
 | Connection times out | Source address not `10.10.10.23`, service off, or rule disabled | `Test-NetConnection 10.10.10.22 -Port 3389` from the PC, compare with the rule's `RemoteAddress` |
 
+## Pending
+
+Found 2026-10-10 while doing C5 step 6: RDP to `FS01` failed with "not authorized for remote login" because `GP-RDP-Access` is linked to `OU=Departments` only. `WIN11-01` is covered by inheritance (`OU=Computers,OU=Operations,OU=Departments`); `FS01` is in `OU=Servers` at the domain root, with no GPO linked.
+
+- [ ] Link `GP-RDP-Access` to `OU=Servers` (then the manual `Add-LocalGroupMember "Remote Desktop Users" -Member "JNCLYDEHL\SG_RDP_Access"` on FS01 is no longer needed). The NetBIOS prefix is `JNCLYDEHL\`, not `AD\`.
+- [ ] Run `redircmp` on DC01 so new joins land in a linkable OU instead of `CN=Computers` (decide: staging OU or `Workstations`).
+- [ ] Create a `Workstations` / `Servers` OU split and link the GPO to each. Do not link at the domain root (it would reach the Domain Controllers).
+- [ ] Put the enable-RDP setting and the scoped firewall rule in the GPO, so a new machine needs no manual step. The built-in "Remote Desktop" rule group stays off.
+- [ ] Link `GPO-Local-Admins` to `OU=Servers` too, so `SG_IT_Admins` is a local Administrator on member servers (FS01 got it by hand in C5 step s1g). Do not link it to the Domain Controllers.
+- [ ] Confirm the GPO applies on `WIN11-01` (`gpresult /r /scope computer`, events 1055 and 1006).
+- [ ] Verify on a fresh test VM: `Get-LocalGroupMember "Remote Desktop Users"` shows `JNCLYDEHL\SG_RDP_Access`.
+
 ## Change Log
 
 ### 2026-10-04: Remote Desktop enabled, group-based access added

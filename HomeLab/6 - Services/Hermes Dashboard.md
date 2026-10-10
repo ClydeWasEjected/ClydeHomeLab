@@ -109,6 +109,7 @@ JSON fields. Phase: `id`, `code`, `title`, `phase`, `summary`, `level`, `tags`, 
 
 - **Multi-account Gmail:** the claude.ai Gmail connector holds one Google account at a time, so Messages and the inbox briefing see only `clyde.john253`, not `clyde.jcaiga`. Plan: a self-hosted multi-account Gmail MCP server on claude-srv (preferred over third-party services like Composio, which would hold mailbox access), read-only scopes for the dashboard sync.
 - Reminders source.
+- **Course completion certificates:** PDF with unique ID plus a verify page, linked to lab evidence. Idea stage, not started (2026-10-09). Details in global memory note `Projects/Course Certificates`.
 - Read-only Proxmox token for the Watchdogs tab (below).
 
 ### Operations
