@@ -35,41 +35,51 @@ Research-based cert plan for the SOC to red-team goal. Two paths: a paid path (s
 5. CPTS is the best-value red-team cert, but belongs after the monitoring phase, matching the vault rule (understand, attack, detect, fix).
 6. Splunk showed up in Barcelona listings, Sentinel did not. Worth one Splunk lab beside Wazuh/Sentinel.
 
-### Paid path (from 2027)
+### Roadmap (ordered, proposal 2026-10-14)
 
-| Order | Cert | Approx cost | Why |
+Decision: mixed, three lanes (Microsoft admin bridge, SOC, red team). Red team is the goal, SOC is a tool, not the destination. Lab work already in the Hermes playbook (pfSense A, VLAN B, AD C incl. C7 vulnerable AD, monitoring F, offensive lab G, red team scenario and pentest report H, identity E) is not repeated here. This doc only covers certs and study that sit outside the playbook.
+
+#### Free (now, evenings after Adecco)
+
+| Order | Item | Where it lives |
+|---|---|---|
+| 1 | Playbook A and B (pfSense, VLANs), the base for everything | Playbook |
+| 2 | TryHackMe beginner paths and HTB Academy Tier 0, 30 to 60 min a day, in parallel the whole time | Not in playbook |
+| 3 | SC-300 study (identity), with Entra and Intune at Adecco | Playbook track E |
+| 4 | SC-900 if the free Microsoft voucher is still offered (verify) | Not in playbook |
+| 5 | Playbook F (Sysmon, central collection, SIEM, detection rules) | Playbook |
+| 6 | SC-200 Microsoft Learn path, plus one Sentinel (free tier) and one Splunk lab | Not in playbook (F is a generic SIEM) |
+| 7 | Playbook C7, G and H (vulnerable AD, attacks, detection, scenario, pentest report) | Playbook |
+
+#### Paid (from 2027, budget permitting)
+
+| Order | Cert | Approx cost | Condition |
 |---|---|---|---|
-| 1 | HTB CJCA | 175 USD with path unlock | Practical, SOC and pentest, best signal per euro. Recognition unproven. |
-| 2 | SC-200 | exam about 165 USD (verify) | Sentinel/KQL/Defender XDR. Feeds the security monitoring phase. |
-| 3 | SC-300 | exam about 165 USD (verify) | Already built into Hermes track E. Identity attacks are the red-team angle. |
-| 4 | Security+ (optional) | 404 USD | HR filter for MSSPs and consultancies that screen by it. Skip if postings do not ask. |
-| 5 | HTB CPTS | about 490 USD voucher plus Academy subscription | Red-team phase. OSCP only if a target posting names it. |
+| 1 | SC-300 | about 165 USD (verify) | Already studied for free, pay the exam only. Bridge job lane. |
+| 2 | HTB CPTS | about 490 USD (Academy plus voucher) | After playbook G and H are done. Best value for red team. No European hiring data found. |
+| 3 | PNPT (399 to 499 USD) or OSCP (1,499 to 1,749 USD) | | PNPT for an affordable AD-focused cert. OSCP only if target postings name it. |
+| Optional | SC-200 (about 165 USD, verify) or HTB CJCA (about 175 USD) | | Only if a SOC role becomes the target. |
+| Optional | Security+ (about 439 USD, 404 in older sources) or CySA+ | | Only if postings ask for it. |
+| Later | CRTO | not checked | When the AD lab is mature. |
 
-Deferred: SC-900, AZ-900 (low signal), AZ-104, MD-102 (job-relevant to the Adecco role, not to the SOC goal; take only if the job needs it).
+Rejected: CCST and Linux Essentials (low signal for someone with IT support experience, exam not free), SC-900 and AZ-900 as paid exams, AZ-104 and MD-102 unless a posting names them.
 
-### Free path (now, evenings after Adecco)
+Move-on rule: pay for CPTS only after playbook G and H have produced written reports. Re-check in 2027 with 10 to 15 real junior pentester and SOC L1 postings (LinkedIn, InfoJobs) to decide on SC-200, Security+ and OSCP.
 
-| Tier | Item | Cost | Why |
-|---|---|---|---|
-| X | ISC2 Certified in Cybersecurity | voucher already redeemed and expired (Clyde, 2026-10-04) | Was the only free cert with a proctored, accredited exam. Unknown whether ISC2 support will reissue an expired voucher; worth one email, not worth planning around. |
-| A | Microsoft Learn SC-200 learning path | free | Same content as the paid cert. Study now, pay for the exam in 2027. |
-| A | Homelab write-ups (Wazuh, Sentinel free tier, Splunk) | free | Documentation and reporting are explicit entry-level expectations in ISC2 research. The vault is the portfolio. |
-| A | TryHackMe free rooms | free, 1 hour/day AttackBox | Structured beginner paths. SAL1 (paid) is the SOC-recognised one later. |
-| A | HTB Academy Tier 0 modules | free, 30 starter cubes | Fundamentals only. Pricing changes were reported for 12 Oct 2026, check the site. |
-| B | SC-900 | free exam voucher via Microsoft Virtual Training Days (one source, verify) | Real proctored exam at no cost. Low signal, take only if the voucher is still offered. |
-| B | LetsDefend (now owned by HTB) | check free tier | SOC simulation practice. Free tier not verified. |
-| Skip | Google Cybersecurity Certificate, IBM Analyst, Cisco Intro, CISA Cyber Essentials, Fortinet NSE 1 to 3 | | Completion badges, no identity-verified exam. Redundant with Clyde's IT background. |
-
-Offensive free content (HTB Tier 0, THM beginner rooms) is for fundamentals only. Main effort stays blue team and homelab until the monitoring phase exists.
+Evidence behind the lanes (2026-10-14, job-board snippets and blogs, no verified counts): Barcelona M365/Azure admin postings (Michael Page 27,000 to 33,000 EUR, Nextret 36,000 to 42,000 EUR) ask for hands-on Entra, Intune and PowerShell and rarely name certs. Spanish SOC L1 listings ask for SIEM experience (Splunk, QRadar, Sentinel, ArcSight), Linux and cloud, certs are a plus. Guides say entry-level security headcount shrank and the common route is admin or cloud, then SOC or pentest, then offensive certs. Red team prices from vendor-affiliated comparison sites. L1 SOC pay 22,000 to 30,000 EUR is a weak source.
 
 ## Open Questions
 
 - Balance: this research only searched cybersecurity, so it is cyber-heavy by construction. Demand for sysadmin/Microsoft admin roles in Barcelona (MD-102, AZ-104, SC-300 as hiring bridge) was not researched. Junior SOC listings seen ask for experience, so the security target likely needs an IT/cloud-admin bridge job first.
 - Budget and date for 2027 certs.
-- Whether to replace the order in `CLAUDE.md` and the Hermes cert tracks with the paid path above.
+- Whether to replace the order in `CLAUDE.md` and the Hermes cert tracks with the roadmap above.
+- Whether to add the "not in playbook" items (THM/HTB Tier 0, SC-900 voucher, SC-200 path plus Sentinel/Splunk labs) to the Hermes playbook as new modules. Playbook is frozen, waiting for Clyde's yes.
 - Verify before buying: ISC2 CC free terms, SC-900 voucher, HTB pricing, CJCA price, exam prices for SC-200/SC-300 in EUR.
 
 ## Change Log
 
+- 2026-10-14: Merged the red team table, mixed review and ordered free/paid roadmap into one "Roadmap" section. Removed write-ups, attacking AD and monitoring from the free list (already in playbook F, G, H, C7).
+- 2026-10-14: Added all-cyber vs mixed review (Barcelona admin postings, Spanish SOC L1 requirements). Decision proposed: mixed, three lanes (bridge, SOC, red team).
+- 2026-10-14: Added red team leaning section. CCST and Linux Essentials rejected (low signal, exam not free). Replaced with eJPT, CPTS, PNPT, OSCP, CRTO.
 - 2026-10-04: ISC2 CC marked unavailable (voucher expired). Added balance question.
 - 2026-10-04: Created. 5 research topics (SOC certs, pentest certs, free certs, whether certs matter, Spain market), sources graded above.
