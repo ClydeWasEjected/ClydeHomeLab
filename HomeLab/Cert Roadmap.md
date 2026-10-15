@@ -44,12 +44,30 @@ Decision: mixed, three lanes (Microsoft admin bridge, SOC, red team). Red team i
 | Order | Item | Where it lives |
 |---|---|---|
 | 1 | Playbook A and B (pfSense, VLANs), the base for everything | Playbook |
-| 2 | TryHackMe beginner paths and HTB Academy Tier 0, 30 to 60 min a day, in parallel the whole time | Not in playbook |
+| 2 | Red team study track (below): HTB Academy Junior Pentester plus PortSwigger, 30 to 60 min a day, in parallel the whole time | Not in playbook |
 | 3 | SC-300 study (identity), with Entra and Intune at Adecco | Playbook track E |
 | 4 | SC-900 if the free Microsoft voucher is still offered (verify) | Not in playbook |
 | 5 | Playbook F (Sysmon, central collection, SIEM, detection rules) | Playbook |
 | 6 | SC-200 Microsoft Learn path, plus one Sentinel (free tier) and one Splunk lab | Not in playbook (F is a generic SIEM) |
 | 7 | Playbook C7, G and H (vulnerable AD, attacks, detection, scenario, pentest report) | Playbook |
+
+#### Red team study track (added 2026-10-15)
+
+Skills layer that runs in parallel to the playbook. The playbook is the lab spine (build, attack, detect, fix) and has priority. This track covers what the playbook does not: methodology on other people's boxes, web, scripting, reports.
+
+Status 2026-10-15: HTB Academy Junior Penetration Tester started, 2 to 3 modules done, almost no notes. Clyde can pay a subscription now.
+
+| Stage | What | Exit check |
+|---|---|---|
+| 1. Base (months 0 to 4) | Redo the 2 to 3 finished HTB modules quickly, this time with notes. Finish the Junior Pentester path. PortSwigger Academy (free) for web. Python/Bash: one small script per month (port scanner, output parser). | 15 easy boxes with own notes. 1 script on GitHub. |
+| 2. Pentest junior (months 4 to 8) | Easy and medium boxes (HTB, THM, VulnHub in Proxmox). One hour cap before a hint, read the write-up after and log what enumeration was missed. One client-style report per 3 or 4 boxes. | 3 reports on GitHub. eJPT optional. |
+| 3. AD offensive (months 8 to 12) | Playbook C7 and G in the own lab: Kerberoasting, AS-REP roasting, BloodHound, pass-the-hash, lateral movement. For each attack: read the log, write the detection, fix it. | One full chain (user to domain admin) written up with detections. |
+| 4. First security job | Apply from stage 2, do not wait for stage 3. Junior pentester, SOC L1 or admin with security duties. | First offer. |
+| 5. Red team (year 2 to 4, while working as pentester) | Evasion, C2 (Sliver, Havoc), phishing, persistence. CRTP, CRTO, then OSEP. | Not before real pentest experience. |
+
+Rules: one platform paid at a time. Pay HTB Academy monthly (student plan probably does not apply after the CFGM, verify), pause it when not studying. Notes for every module and box, no notes means not learned. Pay for the cert (CPTS or PNPT) only after stage 3 produced written reports.
+
+Position change (2026-10-15): in chat I first said to pause SC-300, AZ-104 and MD-102. The mixed three-lane review above is better evidenced (Barcelona postings ask for hands-on Entra/Intune and SOC L1 wants experience), so the Microsoft bridge lane stays, at lower weight than this track.
 
 #### Paid (from 2027, budget permitting)
 
@@ -71,13 +89,14 @@ Evidence behind the lanes (2026-10-14, job-board snippets and blogs, no verified
 ## Open Questions
 
 - Balance: this research only searched cybersecurity, so it is cyber-heavy by construction. Demand for sysadmin/Microsoft admin roles in Barcelona (MD-102, AZ-104, SC-300 as hiring bridge) was not researched. Junior SOC listings seen ask for experience, so the security target likely needs an IT/cloud-admin bridge job first.
-- Budget and date for 2027 certs.
+- Budget and date for 2027 certs. 2026-10-15: Clyde can pay for a platform subscription now; exam budget still open.
 - Whether to replace the order in `CLAUDE.md` and the Hermes cert tracks with the roadmap above.
 - Whether to add the "not in playbook" items (THM/HTB Tier 0, SC-900 voucher, SC-200 path plus Sentinel/Splunk labs) to the Hermes playbook as new modules. Playbook is frozen, waiting for Clyde's yes.
 - Verify before buying: ISC2 CC free terms, SC-900 voucher, HTB pricing, CJCA price, exam prices for SC-200/SC-300 in EUR.
 
 ## Change Log
 
+- 2026-10-15: Added "Red team study track" (5 stages with exit checks), replaced free item 2, noted that a platform subscription is affordable now. Playbook untouched (frozen); proposed playbook modules still wait for a yes.
 - 2026-10-14: Merged the red team table, mixed review and ordered free/paid roadmap into one "Roadmap" section. Removed write-ups, attacking AD and monitoring from the free list (already in playbook F, G, H, C7).
 - 2026-10-14: Added all-cyber vs mixed review (Barcelona admin postings, Spanish SOC L1 requirements). Decision proposed: mixed, three lanes (bridge, SOC, red team).
 - 2026-10-14: Added red team leaning section. CCST and Linux Essentials rejected (low signal, exam not free). Replaced with eJPT, CPTS, PNPT, OSCP, CRTO.
